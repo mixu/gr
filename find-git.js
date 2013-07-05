@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 var path = require('path'),
     List = require('./list.js'),
     exec = require('./run.js');

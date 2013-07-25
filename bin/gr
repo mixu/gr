@@ -1,7 +1,27 @@
 #!/usr/bin/env node
 var path = require('path'),
-    List = require('./list.js'),
-    exec = require('./run.js');
+    List = require('../lib/list.js'),
+    exec = require('../lib/run.js'),
+    style = require('../lib/style.js'),
+    opts = require('optimist')
+    .usage('Usage: $0 --include <file/dir ...> --out filename.js')
+    .options({
+      'version': {
+        describe: 'Version info'
+      }
+    });
+    argv = opts.parse(process.argv);
+
+if(argv['version'] || argv['v'] ) {
+  console.log(require('../package.json').version);
+  process.exit();
+}
+
+if(argv['help']) {
+  console.log(opts.help());
+  process.exit();
+}
+
 
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
     task = 'git -c color.status=always status -sb';
@@ -24,7 +44,8 @@ list.add(homePath);
 list.files.forEach(function(file) {
   var cwd = path.dirname(file.name);
   tasks.push(function(onDone) {
-    console.log('\nin '+cwd+'\n');
+    console.log(style('\nin ' +path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white') + '\n');
+    // console.log('\nin '+cwd+'\n');
     exec(task, cwd, onDone);
   });
 });

@@ -23,7 +23,9 @@
     "url": "https://github.com/mixu/gr/issues"
   },
   "bin": {
-    "gr": "./find-git.js"
+    "gr": "./bin/gr"
   },
-  "dependencies": {}
+  "dependencies": {
+    "optimist": "~0.6.0"
+  }
 }

@@ -1,11 +1,18 @@
 #!/usr/bin/env node
-var path = require('path'),
-    List = require('../lib/list.js'),
-    exec = require('../lib/run.js'),
+var Gr = require('../index.js'),
+    Config = require('../lib/config.js'),
+    gr = new Gr(),
+    path = require('path'),
     style = require('../lib/style.js'),
     opts = require('optimist')
     .usage('Usage: $0 --include <file/dir ...> --out filename.js')
     .options({
+      'list': {
+        describe: 'List all known repositories.'
+      },
+      'tag': {
+        describe: 'Add tag'
+      },
       'version': {
         describe: 'Version info'
       }
@@ -22,9 +29,34 @@ if(argv['help']) {
   process.exit();
 }
 
+if(argv['tag']) {
+  var rest = process.argv.slice(process.argv.indexOf('--tag') + 1);
+  console.log(rest);
+  process.exit();
+}
 
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
-    task = 'git -c color.status=always status -sb';
+    task = 'git -c color.status=always status -sb',
+    config = new Config(homePath+'/.grconfig.json'),
+    repos = {};
+
+gr.add(homePath);
+
+if(argv['list']) {
+  gr.files().forEach(function(file) {
+    var cwd = path.dirname(file.name).replace(new RegExp('^'+homePath+'/'), '~/');
+    console.log(style(path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white'));
+  });
+  process.exit();
+}
+
+gr.files().forEach(function(file) {
+  repos[file.name] = {};
+});
+
+config.items.repos = repos;
+
+config.save();
 
 if(process.argv.length > 2) {
   var parts = process.argv.slice(2);
@@ -36,27 +68,4 @@ if(process.argv.length > 2) {
   task = parts.join(' ');
 }
 
-var list = new List(),
-    tasks = [];
-
-list.add(homePath);
-
-list.files.forEach(function(file) {
-  var cwd = path.dirname(file.name);
-  tasks.push(function(onDone) {
-    console.log(style('\nin ' +path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white') + '\n');
-    // console.log('\nin '+cwd+'\n');
-    exec(task, cwd, onDone);
-  });
-});
-
-function series(task) {
-  if(task) {
-    task(function(result) {
-      return series(tasks.shift());
-    });
-  }
-}
-series(tasks.shift());
-
-
+gr.run(task);

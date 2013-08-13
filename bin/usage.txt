@@ -1,0 +1,6 @@
+Usage: gr --include <file/dir ...> --out filename.js
+
+Options:
+  --list     List all known repositories.
+  --tag      Add tag
+  --version  Version info

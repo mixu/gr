@@ -3,21 +3,53 @@ var Gr = require('../index.js'),
     Config = require('../lib/config.js'),
     gr = new Gr(),
     path = require('path'),
-    style = require('../lib/style.js'),
-    opts = require('optimist')
-    .usage('Usage: $0 --include <file/dir ...> --out filename.js')
-    .options({
-      'list': {
-        describe: 'List all known repositories.'
-      },
-      'tag': {
-        describe: 'Add tag'
-      },
-      'version': {
-        describe: 'Version info'
-      }
-    });
-    argv = opts.parse(process.argv);
+    style = require('../lib/style.js');
+
+var filterRegex = require('../lib/list-tasks/filter-regex.js');
+
+// args parser (damnit)
+var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
+    task = [],
+    argv = {},
+    i = 2, key;
+
+function isArg(s) {
+  return s && s.charAt(0) == '-';
+}
+
+// gr [options] [directory] [command]
+
+// Smart args:
+// all arguments after the last known option constitute the command
+// Smart targets:
+// if the first argument contains a slash and is a valid directory,
+// the operation is constrained to that particular target
+// Explicitly setting the command:
+// gr [options] --include [directory] -- [command]
+
+while(i < process.argv.length) {
+  if(isArg(process.argv[i])) {
+    key = process.argv[i].replace(/^-+/, '');
+    argv[key] = true;
+    i++;
+    if(isArg(process.argv[i + 1])) {
+      argv[key] = process.argv[i + 1];
+      i++;
+    }
+  } else {
+    task.push(process.argv[i]);
+    i++;
+  }
+}
+
+console.log(argv, task);
+process.exit();
+
+if(task.length == 0) {
+  task = 'git -c color.status=always status -sb';
+} else {
+  task = task.join(' ');
+}
 
 if(argv['version'] || argv['v'] ) {
   console.log(require('../package.json').version);
@@ -35,12 +67,20 @@ if(argv['tag']) {
   process.exit();
 }
 
-var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
-    task = 'git -c color.status=always status -sb',
-    config = new Config(homePath+'/.grconfig.json'),
+var config = new Config(homePath+'/.grconfig.json'),
     repos = {};
 
 gr.add(homePath);
+
+// apply filter paths
+var excludeList = [].concat(config.ignore, argv['ignore']).filter(function(item) {
+  return !!item;
+}).map(function(expr) {
+  return new RegExp(expr);
+});
+
+filterRegex(gr.list, excludeList);
+delete argv['ignore'];
 
 if(argv['list']) {
   gr.files().forEach(function(file) {
@@ -57,6 +97,9 @@ gr.files().forEach(function(file) {
 config.items.repos = repos;
 
 config.save();
+
+console.dir(argv);
+
 
 if(process.argv.length > 2) {
   var parts = process.argv.slice(2);

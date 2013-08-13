@@ -26,6 +26,6 @@
     "gr": "./bin/gr"
   },
   "dependencies": {
-    "optimist": "~0.6.0"
+    "minilog": "~2.0.2"
   }
 }

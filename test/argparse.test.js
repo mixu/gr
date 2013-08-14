@@ -55,6 +55,9 @@ exports['parse'] = {
       { bool: true, _: ['hello', 'world'] });
     assert.deepEqual(parse([ '--long', 'bar', '--foo', 'baz', 'hello', 'world' ]),
       { long: 'bar', foo: 'baz', _: ['hello', 'world'] });
+
+    assert.deepEqual(parse([ 'git', 'log', '--short', '-1' ]),
+      { _: ['git', 'log', '--short', '-1'] });
   },
 
   'explicit args': function() {

@@ -9,7 +9,8 @@ var filterRegex = require('../lib/list-tasks/filter-regex.js');
 
 // args parser (damnit)
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
-    parse = require('../lib/argparse.js');
+    parse = require('../lib/argparse.js'),
+    argv = parse(process.argv.slice(2));
 
 // gr [options] [directory] [command]
 
@@ -21,8 +22,9 @@ var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME
 // Explicitly setting the command:
 // gr [options] --include [directory] -- [command]
 
-console.log(parse(process.argv));
-process.exit();
+console.log(argv);
+
+var task = argv['_'] || [];
 
 if(task.length == 0) {
   task = 'git -c color.status=always status -sb';
@@ -52,11 +54,14 @@ var config = new Config(homePath+'/.grconfig.json'),
 gr.add(homePath);
 
 // apply filter paths
-var excludeList = [].concat(config.ignore, argv['ignore']).filter(function(item) {
+var excludeList = [].concat(config.get('exclude'), argv['exclude']).filter(function(item) {
   return !!item;
 }).map(function(expr) {
+  expr = expr.replace('~', homePath);
   return new RegExp(expr);
 });
+
+// require('minilog').enable();
 
 filterRegex(gr.list, excludeList);
 delete argv['ignore'];
@@ -76,9 +81,6 @@ gr.files().forEach(function(file) {
 config.items.repos = repos;
 
 config.save();
-
-console.dir(argv);
-
 
 if(process.argv.length > 2) {
   var parts = process.argv.slice(2);

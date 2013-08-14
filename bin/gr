@@ -9,13 +9,7 @@ var filterRegex = require('../lib/list-tasks/filter-regex.js');
 
 // args parser (damnit)
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
-    task = [],
-    argv = {},
-    i = 2, key;
-
-function isArg(s) {
-  return s && s.charAt(0) == '-';
-}
+    parse = require('../lib/argparse.js');
 
 // gr [options] [directory] [command]
 
@@ -27,22 +21,7 @@ function isArg(s) {
 // Explicitly setting the command:
 // gr [options] --include [directory] -- [command]
 
-while(i < process.argv.length) {
-  if(isArg(process.argv[i])) {
-    key = process.argv[i].replace(/^-+/, '');
-    argv[key] = true;
-    i++;
-    if(isArg(process.argv[i + 1])) {
-      argv[key] = process.argv[i + 1];
-      i++;
-    }
-  } else {
-    task.push(process.argv[i]);
-    i++;
-  }
-}
-
-console.log(argv, task);
+console.log(parse(process.argv));
 process.exit();
 
 if(task.length == 0) {

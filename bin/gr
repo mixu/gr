@@ -2,6 +2,7 @@
 var Gr = require('../index.js'),
     Config = require('../lib/config.js'),
     gr = new Gr(),
+    fs = require('fs'),
     path = require('path'),
     style = require('../lib/style.js');
 
@@ -38,7 +39,7 @@ if(argv['version'] || argv['v'] ) {
 }
 
 if(argv['help']) {
-  console.log(opts.help());
+  console.log(fs.readFileSync(__dirname + '/usage.txt').toString());
   process.exit();
 }
 
@@ -50,6 +51,11 @@ if(argv['tag']) {
 
 var config = new Config(homePath+'/.grconfig.json'),
     repos = {};
+
+if(argv['config']) {
+  console.log(config);
+  process.exit();
+}
 
 gr.add(homePath);
 

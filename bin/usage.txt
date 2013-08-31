@@ -1,6 +1,15 @@
-Usage: gr --include <file/dir ...> --out filename.js
+Usage: gr
 
 Options:
+
+  --config   List configuration
   --list     List all known repositories.
-  --tag      Add tag
   --version  Version info
+  --help     Show this help
+
+  Tagging
+
+  #tag       List directories associated with "tag"
+  #tag <cmd> Execute a command
+  +#tag      Tag the current directory with "tag"
+  -#tag      Untag the current directory from "tag"

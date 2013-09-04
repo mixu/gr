@@ -1,15 +1,33 @@
 var path = require('path'),
     List = require('./lib/list.js'),
     exec = require('./lib/run.js'),
-    style = require('./lib/style.js');
+    style = require('./lib/style.js'),
+    Config = require('../lib/config.js');
+
+var filterRegex = require('../lib/list-tasks/filter-regex.js');
+
+var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
 
 function Gr() {
   this.list = new List();
+  this.config = new Config(homePath+'/.grconfig.json');
 }
 
 Gr.prototype.add = function(path) {
   this.list.add(path);
 };
+
+Gr.prototype.exclude = function(arr) {
+  // apply filter paths
+  var excludeList = arr.filter(function(item) {
+    return !!item;
+  }).map(function(expr) {
+    expr = expr.replace('~', homePath);
+    return new RegExp(expr);
+  });
+
+  filterRegex(gr.list, excludeList);
+}
 
 Gr.prototype.run = function(task) {
   var tasks = [];

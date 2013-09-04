@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 var Gr = require('../index.js'),
-    Config = require('../lib/config.js'),
     gr = new Gr(),
     fs = require('fs'),
     path = require('path'),
     style = require('../lib/style.js');
-
-var filterRegex = require('../lib/list-tasks/filter-regex.js');
 
 // args parser (damnit)
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
@@ -49,28 +46,20 @@ if(argv['tag']) {
   process.exit();
 }
 
-var config = new Config(homePath+'/.grconfig.json'),
-    repos = {};
+var repos = {};
 
 if(argv['config']) {
-  console.log(config);
+  console.log(gr.config);
   process.exit();
 }
 
 gr.add(homePath);
 
-// apply filter paths
-var excludeList = [].concat(config.get('exclude'), argv['exclude']).filter(function(item) {
-  return !!item;
-}).map(function(expr) {
-  expr = expr.replace('~', homePath);
-  return new RegExp(expr);
-});
+gr.exclude([].concat(config.get('exclude'), argv['exclude']));
 
 // require('minilog').enable();
 
-filterRegex(gr.list, excludeList);
-delete argv['ignore'];
+delete argv['exclude'];
 
 if(argv['list']) {
   gr.files().forEach(function(file) {
@@ -84,9 +73,9 @@ gr.files().forEach(function(file) {
   repos[file.name] = {};
 });
 
-config.items.repos = repos;
+gr.config.items.repos = repos;
 
-config.save();
+gr.config.save();
 
 if(process.argv.length > 2) {
   var parts = process.argv.slice(2);

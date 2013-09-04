@@ -61,8 +61,12 @@ exports['parse'] = {
   },
 
   'explicit args': function() {
+    assert.deepEqual(parse([ '--bool', 'foo', '--', 'hello', 'world' ]),
+      { bool: 'foo', _: ['hello', 'world'] });
     assert.deepEqual(parse([ '--bool', 'foo', '--', 'hello', 'world' ], { bool: Boolean }),
-      { b: true, _: ['hello', 'world'] });
+      { bool: true, _: ['hello', 'world'] });
+    assert.deepEqual(parse([ '--bool', 'foo', '--', '--hello', '--world' ]),
+      { bool: 'foo', _: ['--hello', '--hello'] });
   },
 
   'smart target does not exist': function() {
@@ -74,6 +78,10 @@ exports['parse'] = {
   },
 
   'smart target exists and is a directory': function() {
+
+  },
+
+  'capture long arguments given the number of expected options': function() {
 
   },
 

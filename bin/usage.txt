@@ -13,3 +13,12 @@ Options:
   #tag <cmd> Execute a command
   +#tag      Tag the current directory with "tag"
   -#tag      Untag the current directory from "tag"
+
+  Smart targets
+
+  <path to directory> <cmd> Execute command in directory
+  <path1> .. <path2> <cmd>  Execute command in directory
+
+  Note: the target path must start with / or ~ and be a directory,
+  otherwise it is interpreted as a command.
+

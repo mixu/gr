@@ -2,9 +2,10 @@ var path = require('path'),
     List = require('./lib/list.js'),
     exec = require('./lib/run.js'),
     style = require('./lib/style.js'),
-    Config = require('../lib/config.js');
+    Config = require('./lib/config.js'),
+    parse = require('./lib/argparse.js');
 
-var filterRegex = require('../lib/list-tasks/filter-regex.js');
+var filterRegex = require('./lib/list-tasks/filter-regex.js');
 
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
 
@@ -52,6 +53,26 @@ Gr.prototype.run = function(task) {
 
 Gr.prototype.files = function() {
   return this.list.files;
+};
+
+Gr.prototype.exec = function(argv, done) {
+  // first argument one of:
+  // `config`
+  // `list``
+  // `tag`
+
+  switch(argv[0]) {
+    case 'config':
+      require('./plugins/config.js')(argv.slice(1), this, done);
+      break;
+    case 'list':
+      break;
+    case 'tag':
+      break;
+  }
+
+  console.log(argv);
+
 };
 
 module.exports = Gr;

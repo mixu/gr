@@ -3,12 +3,21 @@ var Gr = require('../index.js'),
     gr = new Gr(),
     fs = require('fs'),
     path = require('path'),
-    style = require('../lib/style.js');
+    style = require('../lib/style.js'),
+    log = require('minilog')('gr');
+
+require('minilog').enable();
 
 // args parser (damnit)
-var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
-    parse = require('../lib/argparse.js'),
-    argv = parse(process.argv.slice(2));
+var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+
+gr.exec(process.argv.slice(2), function(err, result) {
+  if(err) {
+    log.error(err);
+  }
+});
+
+process.exit();
 
 // gr [options] [directory] [command]
 

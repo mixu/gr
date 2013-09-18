@@ -66,7 +66,7 @@ exports['parse'] = {
     assert.deepEqual(parse([ '--bool', 'foo', '--', 'hello', 'world' ], { bool: Boolean }),
       { bool: true, _: ['hello', 'world'] });
     assert.deepEqual(parse([ '--bool', 'foo', '--', '--hello', '--world' ]),
-      { bool: 'foo', _: ['--hello', '--hello'] });
+      { bool: 'foo', _: ['--hello', '--world'] });
   },
 
   'smart target does not exist': function() {

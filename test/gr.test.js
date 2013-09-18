@@ -4,31 +4,25 @@ var assert = require('assert'),
 exports['gr'] = {
 
   '--config lists configuration': function() {
-    gr.exec([ '--config' ], function(result) {
+    gr.exec([ 'config' ], function(err, result) {
 
     });
   },
 
   '--config add foo.bar adds a configuration option': function() {
-    gr.exec([ '--config', 'add', 'foo.bar', 'baz' ], function(result) {
-
-    });
-  },
-
-  '--config name value adds a configuration option': function() {
-    gr.exec([ '--config', 'abc', 'def' ], function(result) {
+    gr.exec([ 'config', 'add', 'foo.bar', 'baz' ], function(err, result) {
 
     });
   },
 
   '--config remove name value removes a configuration option': function() {
-    gr.exec([ '--config', 'remove', 'abc' ], function(result) {
+    gr.exec([ 'config', 'remove', 'abc' ], function(err, result) {
 
     });
   },
 
   '--list lists all known repositories': function() {
-    gr.exec([ '--list' ], function(result) {
+    gr.exec([ 'list' ], function(err, result) {
 
     });
   },
@@ -37,7 +31,7 @@ exports['gr'] = {
     gr.exec([ '+#foo' ], function(result) {
 
     });
-    gr.exec([ '--tag', 'add', 'foo' ], function(result) {
+    gr.exec([ 'tag', 'add', 'foo' ], function(result) {
 
     });
   },
@@ -46,7 +40,7 @@ exports['gr'] = {
     gr.exec([ '#foo', 'bar' ], function(result) {
 
     });
-    gr.exec([ '--tag', 'foo', 'bar' ], function(result) {
+    gr.exec([ 'tag', 'foo', 'bar' ], function(result) {
 
     });
   },
@@ -55,13 +49,13 @@ exports['gr'] = {
     gr.exec([ '#foo' ], function(result) {
 
     });
-    gr.exec([ '--tag', 'foo' ], function(result) {
+    gr.exec([ 'tag', 'foo' ], function(result) {
 
     });
   },
 
   'can list all tags': function() {
-    gr.exec([ '--tag', 'list' ], function(result) {
+    gr.exec([ 'tag', 'list' ], function(result) {
 
     });
   },
@@ -70,7 +64,7 @@ exports['gr'] = {
     gr.exec([ '-#foo' ], function(result) {
 
     });
-    gr.exec([ '--tag', 'rm', 'foo' ], function(result) {
+    gr.exec([ 'tag', 'rm', 'foo' ], function(result) {
 
     });
   },

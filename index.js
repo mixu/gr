@@ -65,9 +65,10 @@ Gr.prototype.exec = function(argv, done) {
     case 'config':
       require('./plugins/config.js')(argv.slice(1), this, done);
       break;
-    case 'list':
-      break;
     case 'tag':
+      require('./plugins/tag.js')(argv.slice(1), this, done);
+      break;
+    case 'list':
       break;
   }
 

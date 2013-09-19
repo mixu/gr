@@ -5,7 +5,7 @@ function add(req, res, next) {
   req.config.add(key, process.cwd());
   log.info('add', key, process.cwd(), '=>', req.config.get(key));
   req.config.save();
-  req.done();
+  req.exit();
 }
 
 function remove(req, res, next) {
@@ -13,13 +13,13 @@ function remove(req, res, next) {
   req.config.remove(key, process.cwd());
   log.info('remove', key, process.cwd(), '=>', req.config.get(key));
   req.config.save();
-  req.done();
+  req.exit();
 }
 
 function list(req, res, next) {
   var key = (req.argv[0] ? 'tags.'+req.argv[0] : 'tags');
   log.info('get', key, '=>', req.config.get(key));
-  req.done();
+  req.exit();
 }
 
 module.exports = {

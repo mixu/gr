@@ -27,6 +27,30 @@ Gr.prototype.exclude = function(arr) {
   filterRegex(this.list, excludeList);
 };
 
+Gr.prototype.preprocess = function(argv) {
+  var self = this,
+      isExpandable,
+      index = 0,
+      first;
+  do {
+    isExpandable = false;
+    first = argv[index].substr(0, 2);
+    switch(first) {
+      case '+#':
+        argv.splice(index, 1, 'tag', 'add', argv[index].substr(2));
+        isExpandable = true;
+        index++;
+        break;
+      case '-#':
+        argv.splice(index, 1, 'tag', 'rm', argv[index].substr(2));
+        isExpandable = true;
+        index++;
+        break;
+    }
+  } while(isExpandable && index < argv.length);
+  return argv;
+};
+
 Gr.prototype.parseTargets = function(argv) {
   var self = this,
       isTarget,
@@ -93,13 +117,13 @@ Gr.prototype.use = function(route, fn) {
 };
 
 // queue and execute a set of tasks (serially)
-Gr.prototype.exec = function(argv) {
+Gr.prototype.exec = function(argv, exit) {
   var self = this,
       tasks = [];
   this.list.files.forEach(function(file) {
    var cwd = path.dirname(file.name);
     tasks.push(function(onDone) {
-      self.handle(cwd, argv, onDone);
+      self.handle(cwd, argv, onDone, exit);
     });
   });
 
@@ -108,13 +132,17 @@ Gr.prototype.exec = function(argv) {
       task(function(result) {
         return series(tasks.shift());
       });
+    } else {
+      if(typeof exit === 'function') {
+        exit();
+      }
     }
   }
   series(tasks.shift());
 };
 
 // handle a single route resolution
-Gr.prototype.handle = function(path, argv, done) {
+Gr.prototype.handle = function(path, argv, done, exit) {
   var stack = this.stack,
       index = 0,
       self = this;
@@ -149,7 +177,8 @@ Gr.prototype.handle = function(path, argv, done) {
       config: self.config,
       argv: rest,
       path: path,
-      done: done
+      done: done,
+      exit: exit
     };
 
     layer.handle(req, process.stdout, next);

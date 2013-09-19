@@ -14,7 +14,7 @@ var config = require('../plugins/config.js'),
 
 function version(req) {
   console.log(require('../package.json').version);
-  req.done();
+  req.exit();
 }
 
 // middleware: git
@@ -29,7 +29,7 @@ gr.use(function(req, res, next) {
 
 gr.use('help', function(req) {
   console.log(fs.readFileSync(__dirname + '/usage.txt').toString());
-  req.done();
+  req.exit();
 });
 
 gr.use('-v', version);
@@ -66,6 +66,11 @@ gr.use(['tag'], tag.list);
 // default: run the remainder as a shell task
 gr.use(require('../plugins/run.js'));
 
-var remainingArgv = gr.parseTargets(process.argv.slice(2));
-
-gr.exec(remainingArgv);
+// preprocessing: expand +#tag / -#tag
+var argv = gr.preprocess(process.argv.slice(2));
+// parse targets
+argv = gr.parseTargets(argv);
+// execute for each target
+gr.exec(argv, function() {
+  console.log('last!');
+});

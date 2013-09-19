@@ -6,5 +6,5 @@ module.exports = function(req, res, next) {
     console.log(style(path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white'));
   });
 
-  req.done();
+  req.exit();
 };

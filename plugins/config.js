@@ -12,7 +12,7 @@ function add(req, res, next) {
   log.info('add', name, value, '=>', req.config.get(name));
   req.config.save();
 
-  req.done();
+  req.exit();
 }
 
 function remove(req, res, next) {
@@ -26,7 +26,7 @@ function remove(req, res, next) {
   log.info('remove', name, '=>', req.config.get(name));
   req.config.save();
 
-  req.done();
+  req.exit();
 }
 
 function set(req, res, next) {
@@ -40,7 +40,7 @@ function set(req, res, next) {
   log.info('set', name, value, '=>', req.config.get(name));
   req.config.save();
 
-  req.done();
+  req.exit();
 }
 
 function get(req, res, next) {
@@ -48,12 +48,12 @@ function get(req, res, next) {
 
   log.info('get', name, '=>', req.config.get(name));
 
-  req.done();
+  req.exit();
 }
 
 function list(req, res, next) {
   console.log(req.config.items);
-  req.done();
+  req.exit();
 }
 
 module.exports = {

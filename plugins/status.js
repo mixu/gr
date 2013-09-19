@@ -19,7 +19,10 @@ module.exports = function(req, res, next) {
 
 
   if(req.argv.length > 0 && req.argv[0] == '--direct') {
-    console.log(style('\nin ' + dirname, 'gray') + style(path.basename(cwd), 'white') + '\n');
+    console.log(
+      style('\nin ' + dirname, 'gray') +
+      style(path.basename(cwd), 'white') + '\n'
+      );
     run('git -c color.status=always status -sb', cwd, req.done);
   } else {
     var task = exec('git status --porcelain ', {

@@ -28,7 +28,8 @@ Gr.prototype.exclude = function(arr) {
 };
 
 Gr.prototype.parseTargets = function(argv) {
-  var isTarget,
+  var self = this,
+      isTarget,
       processed = 0,
       targetPath,
       first;
@@ -37,6 +38,14 @@ Gr.prototype.parseTargets = function(argv) {
     first = argv[0].charAt(0);
     if(first == '#') {
       // #tags
+      var key = 'tags.'+argv[0].substr(1),
+          value = this.config.get(key);
+
+      if(typeof value !== 'undefined') {
+        (Array.isArray(value) ? value : [ value]).forEach(function(path) {
+          self.list.add(path);
+        });
+      }
       processed++;
       isTarget = true;
       argv.shift();
@@ -111,14 +120,13 @@ Gr.prototype.handle = function(path, argv, done) {
       self = this;
 
   function next(err) {
-    var layer, isMatch;
+    var layer, isMatch, rest;
     // next callback
     layer = stack[index++];
     // all done
     if (!layer) {
       return;
     }
-
     isMatch = (layer.route === '');
     // skip this layer if the route doesn't match.
     if(!isMatch) {
@@ -126,6 +134,9 @@ Gr.prototype.handle = function(path, argv, done) {
       isMatch = parts.every(function(part, i) {
         return argv[i] == part;
       });
+      rest = argv.slice(layer.route.length ? layer.route.length : 1 );
+    } else {
+      rest = argv;
     }
     if (!isMatch) {
       return next(err);
@@ -136,7 +147,7 @@ Gr.prototype.handle = function(path, argv, done) {
     var req = {
       gr: self,
       config: self.config,
-      argv: argv.slice(layer.route.length ? layer.route.length : 1 ),
+      argv: rest,
       path: path,
       done: done
     };

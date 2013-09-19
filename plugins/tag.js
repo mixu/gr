@@ -1,45 +1,29 @@
 var log = require('minilog')('gr-tag');
 
-module.exports = function(argv, gr, done) {
+function add(req, res, next) {
+  var key = 'tags.'+req.argv[0];
+  req.config.add(key, process.cwd());
+  log.info('add', key, process.cwd(), '=>', req.config.get(key));
+  req.config.save();
+  req.done();
+}
 
-  switch(argv[0]) {
-    case 'add':
-      add(argv[1], gr, done);
-      break;
-    case 'remove':
-    case 'rm':
-      remove(argv[1], gr, done);
-      break;
-    case 'list':
-      list(argv[1], gr, done);
-      break;
-    case 'use':
+function remove(req, res, next) {
+  var key = 'tags.'+req.argv[0];
+  req.config.remove(key, process.cwd());
+  log.info('remove', key, process.cwd(), '=>', req.config.get(key));
+  req.config.save();
+  req.done();
+}
 
-      break;
-    default:
-      // queue command for execution
-  }
+function list(req, res, next) {
+  var key = (req.argv[0] ? 'tags.'+req.argv[0] : 'tags');
+  log.info('get', key, '=>', req.config.get(key));
+  req.done();
+}
 
+module.exports = {
+  add: add,
+  remove: remove,
+  list: list
 };
-
-function add(tag, gr, done) {
-  var key = 'tags.'+tag;
-  gr.config.add(key, process.cwd());
-  log.info('add', key, process.cwd(), '=>', gr.config.get(key));
-  gr.config.save();
-  return done(null, gr.config.get(key));
-}
-
-function remove(tag, gr, done) {
-  var key = 'tags.'+tag;
-  gr.config.remove(key, process.cwd());
-  log.info('remove', key, process.cwd(), '=>', gr.config.get(key));
-  gr.config.save();
-  return done(null, gr.config.get(key));
-}
-
-function list(tag, gr, done) {
-  var key = (tag ? 'tags.'+tag : 'tags');
-  log.info('get', key, '=>', gr.config.get(key));
-  return done(null, gr.config.get(key));
-}

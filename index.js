@@ -1,6 +1,5 @@
 var path = require('path'),
     List = require('./lib/list.js'),
-    exec = require('./lib/run.js'),
     style = require('./lib/style.js'),
     Config = require('./lib/config.js'),
     parse = require('./lib/argparse.js');
@@ -12,6 +11,7 @@ var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME
 function Gr() {
   this.list = new List();
   this.config = new Config(homePath+'/.grconfig.json');
+  this.stack = [];
 }
 
 Gr.prototype.add = function(path) {
@@ -30,14 +30,20 @@ Gr.prototype.exclude = function(arr) {
   filterRegex(gr.list, excludeList);
 }
 
-Gr.prototype.run = function(task) {
+Gr.prototype.files = function() {
+  return this.list.files;
+};
+
+Gr.prototype.use = function(route, fn) {
+  this.stack.push({ route: route, handle: fn });
+};
+
+Gr.prototype.exec = function() {
   var tasks = [];
   this.list.files.forEach(function(file) {
    var cwd = path.dirname(file.name);
     tasks.push(function(onDone) {
-      console.log(style('\nin ' +path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white') + '\n');
-      // console.log('\nin '+cwd+'\n');
-      exec(task, cwd, onDone);
+      console.log('\nin '+cwd+'\n');
     });
   });
 
@@ -51,29 +57,41 @@ Gr.prototype.run = function(task) {
   series(tasks.shift());
 };
 
-Gr.prototype.files = function() {
-  return this.list.files;
-};
+Gr.prototype.handle = function(argv, done) {
+  var stack = this.stack,
+      index = 0,
+      self = this;
 
-Gr.prototype.exec = function(argv, done) {
-  // first argument one of:
-  // `config`
-  // `list``
-  // `tag`
+  function next(err) {
+    var layer;
+    // next callback
+    layer = stack[index++];
+    // all done
+    if (!layer) {
 
-  switch(argv[0]) {
-    case 'config':
-      require('./plugins/config.js')(argv.slice(1), this, done);
-      break;
-    case 'tag':
-      require('./plugins/tag.js')(argv.slice(1), this, done);
-      break;
-    case 'list':
-      break;
+      return;
+    }
+    // skip this layer if the route doesn't match.
+    var isMatch = (Array.isArray(layer.route) ? layer.route : [ layer.route ] ).every(function(part, i) {
+      return argv[i] == part;
+    });
+    if (!isMatch) {
+      return next(err);
+    }
+
+    // Call the layer handler
+    // Trim off the part of the url that matches the route
+    var req = {
+      argv: argv.slice(layer.route.length ? layer.route.length : 1 ),
+      config: self.config,
+      done: done
+    };
+
+    layer.handle(req, process.stdout, next);
   }
 
+  next();
   console.log(argv);
-
 };
 
 module.exports = Gr;

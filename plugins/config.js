@@ -1,60 +1,65 @@
 var log = require('minilog')('gr-config');
 
-module.exports = function(argv, gr, done) {
+function add(req, res, next) {
+  var name = req.argv[0],
+      value = req.argv[1];
 
-  switch(argv[0]) {
-    case 'add':
-      add(argv[1], argv[2], gr, done);
-      break;
-    case 'set':
-      set(argv[1], argv[2], gr, done);
-      break;
-    case 'remove':
-    case 'rm':
-      remove(argv[1], argv[2], gr, done);
-      break;
-    case 'get':
-      get(argv[1], gr, done);
-      break;
-    case 'list':
-    default:
-      console.log(gr.config.items);
-      done(null);
-  }
-
-};
-
-function add(name, value, gr, done) {
   if(!name || typeof value === 'undefined') {
-    return done('Name and value are required!');
+    return next('Name and value are required!');
   }
-  gr.config.add(name, value);
-  log.info('add', name, value, '=>', gr.config.get(name));
-  gr.config.save();
-  return done(null, gr.config.get(name));
+
+  req.config.add(name, value);
+  log.info('add', name, value, '=>', req.config.get(name));
+  req.config.save();
+
+  req.done();
 }
 
-function remove(name, value, gr, done) {
+function remove(req, res, next) {
+  var name = req.argv[0],
+      value = req.argv[1];
+
   if(!name) {
-    return done('Name is required!');
+    return next('Name is required!');
   }
-  gr.config.remove(name, value);
-  log.info('remove', name, '=>', gr.config.get(name));
-  gr.config.save();
-  return done(null, gr.config.get(name));
+  req.config.remove(name, value);
+  log.info('remove', name, '=>', req.config.get(name));
+  req.config.save();
+
+  req.done();
 }
 
-function set(name, value, gr, done) {
+function set(req, res, next) {
+  var name = req.argv[0],
+      value = req.argv[1];
+
   if(!name || typeof value === 'undefined') {
-    return done('Name and value are required!');
+    return next('Name and value are required!');
   }
-  gr.config.set(name, value);
-  log.info('set', name, value, '=>', gr.config.get(name));
-  gr.config.save();
-  return done(null, gr.config.get(name));
+  req.config.set(name, value);
+  log.info('set', name, value, '=>', req.config.get(name));
+  req.config.save();
+
+  req.done();
 }
 
-function get(name, gr, done) {
-  log.info('get', name, '=>', gr.config.get(name));
-  return done(null, gr.config.get(name));
+function get(req, res, next) {
+  var name = req.argv[0];
+
+  log.info('get', name, '=>', req.config.get(name));
+
+  req.done();
 }
+
+function list(req, res, next) {
+  console.log(req.config.items);
+  req.done();
+}
+
+module.exports = {
+  add: add,
+  set: set,
+  remove: remove,
+  get: get,
+  list: list
+};

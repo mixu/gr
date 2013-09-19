@@ -11,7 +11,30 @@ require('minilog').enable();
 // args parser (damnit)
 var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
 
-gr.exec(process.argv.slice(2), function(err, result) {
+var config = require('../plugins/config.js'),
+    tag = require('../plugins/tag.js'),
+    status = require('../plugins/status.js');
+
+// configuration
+gr.use(['config', 'add'], config.add);
+gr.use(['config', 'set'], config.set);
+gr.use(['config', 'remove'], config.remove);
+gr.use(['config', 'rm'], config.remove);
+gr.use(['config', 'get'], config.get);
+gr.use(['config', 'list'], config.list);
+gr.use(['config'], config.list);
+
+// tag manipulation
+gr.use(['tag', 'add'], tag.add);
+gr.use(['tag', 'remove'], tag.remove);
+gr.use(['tag', 'rm'], tag.remove);
+gr.use(['tag', 'list'], tag.list);
+gr.use(['tag'], tag.list);
+
+// status plugin
+gr.use(['status'], status);
+
+gr.handle(process.argv.slice(2), function(err, result) {
   if(err) {
     log.error(err);
   }
@@ -49,11 +72,6 @@ if(argv['help']) {
   process.exit();
 }
 
-if(argv['tag']) {
-  var rest = process.argv.slice(process.argv.indexOf('--tag') + 1);
-  console.log(rest);
-  process.exit();
-}
 
 var repos = {};
 

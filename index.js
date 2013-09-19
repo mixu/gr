@@ -3,7 +3,8 @@ var fs = require('fs'),
     List = require('./lib/list.js'),
     style = require('./lib/style.js'),
     Config = require('./lib/config.js'),
-    parse = require('./lib/argparse.js');
+    parse = require('./lib/argparse.js'),
+    log = require('minilog')('gr');
 
 var filterRegex = require('./lib/list-tasks/filter-regex.js');
 
@@ -102,6 +103,14 @@ Gr.prototype.parseTargets = function(argv) {
   // apply exclusions
   this.exclude([].concat(this.config.get('exclude'), argv['exclude']));
   delete argv['exclude'];
+
+  // if the list is empty, warn
+  if(this.list.files.length == 0) {
+    log.warn('No target paths matched. Perhaps no paths are associated with the tag you used?');
+    log.warn('Running `gr tag list` for you...');
+    this.list.add(process.cwd());
+    argv = ['tag', 'list'];
+  }
 
   // return the remaining argv
   return argv;

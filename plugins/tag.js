@@ -1,4 +1,5 @@
-var log = require('minilog')('gr-tag');
+var log = require('minilog')('gr-tag'),
+    style = require('../lib/style.js');
 
 function add(req, res, next) {
   var key = 'tags.'+req.argv[0];
@@ -17,8 +18,17 @@ function remove(req, res, next) {
 }
 
 function list(req, res, next) {
-  var key = (req.argv[0] ? 'tags.'+req.argv[0] : 'tags');
-  log.info('get', key, '=>', req.config.get(key));
+  var key = (req.argv[0] ? 'tags.'+req.argv[0] : 'tags'),
+      obj = req.config.get(key),
+      tags = Object.keys(obj);
+
+  tags.forEach(function(tag) {
+    console.log(
+      style('Paths tagged ', 'gray') +
+      style('#'+tag, 'white') +
+      ': ' + obj[tag].join(', ')
+    );
+  });
   req.exit();
 }
 

@@ -72,5 +72,5 @@ var argv = gr.preprocess(process.argv.slice(2));
 argv = gr.parseTargets(argv);
 // execute for each target
 gr.exec(argv, function() {
-  console.log('last!');
+  // console.log('last!');
 });

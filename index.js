@@ -1,4 +1,5 @@
-var path = require('path'),
+var fs = require('fs'),
+    path = require('path'),
     List = require('./lib/list.js'),
     style = require('./lib/style.js'),
     Config = require('./lib/config.js'),
@@ -6,20 +7,20 @@ var path = require('path'),
 
 var filterRegex = require('./lib/list-tasks/filter-regex.js');
 
-var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-
 function Gr() {
   this.list = new List();
-  this.config = new Config(homePath+'/.grconfig.json');
+  this.homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+  this.config = new Config(this.homePath+'/.grconfig.json');
   this.stack = [];
 }
 
 Gr.prototype.exclude = function(arr) {
+  var self = this;
   // apply filter paths
   var excludeList = arr.filter(function(item) {
     return !!item;
   }).map(function(expr) {
-    expr = expr.replace('~', homePath);
+    expr = expr.replace('~', self.homePath);
     return new RegExp(expr);
   });
 
@@ -27,21 +28,44 @@ Gr.prototype.exclude = function(arr) {
 };
 
 Gr.prototype.parseTargets = function(argv) {
-  // paths
-  this.list.add(process.cwd());
-  // #tags
-  // default setting from config
-  if(false) {
+  var isTarget,
+      processed = 0,
+      targetPath,
+      first;
+  do {
+    isTarget = false;
+    first = argv[0].charAt(0);
+    if(first == '#') {
+      // #tags
+      processed++;
+      isTarget = true;
+      argv.shift();
+    } else if(first == '~' || first == '/' || first == '.') {
+      // paths
+      targetPath = path.resolve(argv[0], process.cwd());
+      if(fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
+        this.list.add(targetPath);
+        processed++;
+        isTarget = true;
+        argv.shift();
+      }
+    }
+  } while(isTarget && argv.length > 0);
+
+  if(processed == 0) {
+    // use default setting from config
     var repos = {};
     // if the default setting is "scan", then scan
-    this.list.add(homePath);
+    this.list.add(this.homePath);
     // save the scanned repo list
     this.list.files.forEach(function(file) {
       repos[file.name] = {};
     });
     this.config.items.repos = repos;
     this.config.save();
+
   }
+
   // apply exclusions
   this.exclude([].concat(this.config.get('exclude'), argv['exclude']));
   delete argv['exclude'];
@@ -110,6 +134,7 @@ Gr.prototype.handle = function(path, argv, done) {
     // Call the layer handler
     // Trim off the part of the url that matches the route
     var req = {
+      gr: self,
       config: self.config,
       argv: argv.slice(layer.route.length ? layer.route.length : 1 ),
       path: path,
@@ -120,7 +145,6 @@ Gr.prototype.handle = function(path, argv, done) {
   }
 
   next();
-  console.log(argv);
 };
 
 module.exports = Gr;

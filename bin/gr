@@ -18,11 +18,12 @@ function version(req) {
 }
 
 // middleware: git
-
+/*
 gr.use(function(req, res, next) {
   console.log('Ran middleware');
   next();
 });
+*/
 
 // plugins
 
@@ -68,5 +69,3 @@ gr.use(require('../plugins/run.js'));
 var remainingArgv = gr.parseTargets(process.argv.slice(2));
 
 gr.exec(remainingArgv);
-
-process.exit();

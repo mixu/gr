@@ -8,14 +8,36 @@ var Gr = require('../index.js'),
 
 require('minilog').enable();
 
-// args parser (damnit)
-var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-
 var config = require('../plugins/config.js'),
     tag = require('../plugins/tag.js'),
     status = require('../plugins/status.js');
 
-// configuration
+function version(req) {
+  console.log(require('../package.json').version);
+  req.done();
+}
+
+// middleware: git
+
+gr.use(function(req, res, next) {
+  console.log('Ran middleware');
+  next();
+});
+
+// plugins
+
+gr.use('help', function(req) {
+  console.log(fs.readFileSync(__dirname + '/usage.txt').toString());
+  req.done();
+});
+
+gr.use('-v', version);
+gr.use('--version', version);
+gr.use('version', version);
+
+// bootstrap plugin ...
+
+// config plugin
 gr.use(['config', 'add'], config.add);
 gr.use(['config', 'set'], config.set);
 gr.use(['config', 'remove'], config.remove);
@@ -24,6 +46,15 @@ gr.use(['config', 'get'], config.get);
 gr.use(['config', 'list'], config.list);
 gr.use(['config'], config.list);
 
+// list plugin
+gr.use('list', require('../plugins/list.js'));
+
+// nop plugin
+gr.use(['nop'],  require('../plugins/nop.js'));
+
+// status plugin
+gr.use(['status'], status);
+
 // tag manipulation
 gr.use(['tag', 'add'], tag.add);
 gr.use(['tag', 'remove'], tag.remove);
@@ -31,87 +62,11 @@ gr.use(['tag', 'rm'], tag.remove);
 gr.use(['tag', 'list'], tag.list);
 gr.use(['tag'], tag.list);
 
-// status plugin
-gr.use(['status'], status);
+// default: run the remainder as a shell task
+gr.use(require('../plugins/run.js'));
 
-gr.handle(process.argv.slice(2), function(err, result) {
-  if(err) {
-    log.error(err);
-  }
-});
+var remainingArgv = gr.parseTargets(process.argv.slice(2));
+
+gr.exec(remainingArgv);
 
 process.exit();
-
-// gr [options] [directory] [command]
-
-// Smart args:
-// all arguments after the last known option constitute the command
-// Smart targets:
-// if the first argument contains a slash and is a valid directory,
-// the operation is constrained to that particular target
-// Explicitly setting the command:
-// gr [options] --include [directory] -- [command]
-
-console.log(argv);
-
-var task = argv['_'] || [];
-
-if(task.length == 0) {
-  task = 'git -c color.status=always status -sb';
-} else {
-  task = task.join(' ');
-}
-
-if(argv['version'] || argv['v'] ) {
-  console.log(require('../package.json').version);
-  process.exit();
-}
-
-if(argv['help']) {
-  console.log(fs.readFileSync(__dirname + '/usage.txt').toString());
-  process.exit();
-}
-
-
-var repos = {};
-
-if(argv['config']) {
-  console.log(gr.config);
-  process.exit();
-}
-
-gr.add(homePath);
-
-gr.exclude([].concat(config.get('exclude'), argv['exclude']));
-
-// require('minilog').enable();
-
-delete argv['exclude'];
-
-if(argv['list']) {
-  gr.files().forEach(function(file) {
-    var cwd = path.dirname(file.name).replace(new RegExp('^'+homePath+'/'), '~/');
-    console.log(style(path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white'));
-  });
-  process.exit();
-}
-
-gr.files().forEach(function(file) {
-  repos[file.name] = {};
-});
-
-gr.config.items.repos = repos;
-
-gr.config.save();
-
-if(process.argv.length > 2) {
-  var parts = process.argv.slice(2);
-  /*
-  if(parts[0] == 'git') {
-    parts.splice(1, 0, '-c color.ui=always');
-  }
-  */
-  task = parts.join(' ');
-}
-
-gr.run(task);

@@ -32,7 +32,10 @@ exports['get and set'] = {
       console.log(key, get(key, obj));
       assert.deepEqual(get(key, obj), [ value1, value2 ]);
     });
+  },
 
+  'get nonexistent': function() {
+    assert.equal(get('aaa', {}), undefined);
   }
 
 };

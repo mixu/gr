@@ -1,24 +1,57 @@
-Usage: gr
+Usage: gr <targets> <cmd>
 
-Options:
+## Targets
 
-  --config   List configuration
-  --list     List all known repositories.
-  --version  Version info
-  --help     Show this help
+The targets can be paths or tags. For example:
 
-  Tagging
+  gr ~/foo ~/bar status
+  gr #work git log -l 1
 
-  #tag       List directories associated with "tag"
-  #tag <cmd> Execute a command
-  +#tag      Tag the current directory with "tag"
-  -#tag      Untag the current directory from "tag"
+Path targets be directories. Tags refer to sets of directories. They managed using the `tag` built-in.
 
-  Smart targets
+## Tagging
 
-  <path to directory> <cmd> Execute command in directory
-  <path1> .. <path2> <cmd>  Execute command in directory
+  #tag          List directories associated with "tag"
+  #tag <cmd>    Run a command in the directories associated with "tag"
+  +#tag         Add a tag to the current directory
+  -#tag         Remove a tag from the current directory
+  +#tag <path>  Add a tag to <path>
+  -#tag <path>  Remove a tag from <path>
 
-  Note: the target path must start with / or ~ and be a directory,
-  otherwise it is interpreted as a command.
+## Commands
+
+The command can be either one of the built-in commands, or a shell command. For example:
+
+  gr #work status
+  gr ~/foo ~/bar ls -lah
+
+To explicitly set the command, use `--`:
+
+  gr ~/foo -- ~/bar.sh
+  gr #work -- git remote -v
+
+Tags can also be specified more explicitly; this is useful if you are using a scripting language which uses # for comments. For example `gr -t work -t play` is the same as `gr #work #play`.
+
+## Built-in commands:
+
+list        List all known repositories and their tags
+
+tag
+  add <t>         Add a tag to the current directory
+  rm <t>          Remove a tag from the current directory
+  add <t> <path>  Add a tag to <path>
+  rm <t> <path>   Remove a tag from <path>
+  list            List all tags (default action)
+
+status    Displays the (git) status of the directory.
+
+config
+  get <k>       Get a config key (can also be a path, e.g. "tags.foo")
+  set <k> <v>   Set a config key (overwrites existing value)
+  add <k> <v>   Add a value to a config key (appends rather than overwriting)
+  rm <k> <v>    Remove a value from a config key (if it exists)
+  list          List all configuration (default action)
+
+help        Show this help
+version     Version info
 

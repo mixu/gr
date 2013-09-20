@@ -45,6 +45,7 @@ gr.use(['config', 'remove'], config.remove);
 gr.use(['config', 'rm'], config.remove);
 gr.use(['config', 'get'], config.get);
 gr.use(['config', 'list'], config.list);
+gr.use(['config', 'ls'], config.list);
 gr.use(['config'], config.list);
 
 // list plugin
@@ -61,6 +62,7 @@ gr.use(['tag', 'add'], tag.add);
 gr.use(['tag', 'remove'], tag.remove);
 gr.use(['tag', 'rm'], tag.remove);
 gr.use(['tag', 'list'], tag.list);
+gr.use(['tag', 'ls'], tag.list);
 gr.use(['tag'], tag.list);
 
 // default: run the remainder as a shell task
@@ -74,3 +76,12 @@ argv = gr.parseTargets(argv);
 gr.exec(argv, function() {
   // console.log('last!');
 });
+
+
+// TODO:
+// test gr #foo #bar
+// gr #foo -- cmd
+// gr dir file.sh
+// gr -t work -t play
+// gr +#foo path1 path2 path3
+// gr -#foo path1 path2 path3

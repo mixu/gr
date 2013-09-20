@@ -35,6 +35,9 @@ Gr.prototype.preprocess = function(argv) {
       first;
   do {
     isExpandable = false;
+    if(!argv[index]) {
+      break;
+    }
     first = argv[index].substr(0, 2);
     switch(first) {
       case '+#':
@@ -60,6 +63,9 @@ Gr.prototype.parseTargets = function(argv) {
       first;
   do {
     isTarget = false;
+    if(!argv[0]) {
+      break;
+    }
     first = argv[0].charAt(0);
     if(first == '#') {
       // #tags
@@ -76,7 +82,7 @@ Gr.prototype.parseTargets = function(argv) {
       argv.shift();
     } else if(first == '~' || first == '/' || first == '.') {
       // paths
-      targetPath = path.resolve(argv[0], process.cwd());
+      targetPath = path.resolve(process.cwd(), argv[0]);
       if(fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
         this.list.add(targetPath);
         processed++;
@@ -162,6 +168,7 @@ Gr.prototype.handle = function(path, argv, done, exit) {
     layer = stack[index++];
     // all done
     if (!layer) {
+      log.info('No command matched.');
       return;
     }
     isMatch = (layer.route === '');
@@ -178,6 +185,8 @@ Gr.prototype.handle = function(path, argv, done, exit) {
     if (!isMatch) {
       return next(err);
     }
+
+    // log.info('Matched', layer.route);
 
     // Call the layer handler
     // Trim off the part of the url that matches the route

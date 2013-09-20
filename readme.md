@@ -2,42 +2,96 @@
 
 Multiple git repository management tool
 
-`gr` is a command line tool that allows you to manage multiple git repositories by prefixing your commands with `gr`.
+`gr` is a command line tool that allows you to manage multiple git repositories.
+
+It works by tagging directories with tags:
+
+    gr +#work ~/mnt/gluejs ~/mnt/microee
+
+After this, you can run any commands on the tagged directories simply by prefixing them with `gr #work`. For example:
+
+    gr #work git status -sb
+
+Outputs:
+
+    in ~/mnt/gluejs
+
+    ## glue2
+     M lib/runner/package-commonjs/index.js
+
+    in ~/mnt/microee
+
+    ## master
+
+`gr` doesn't do any command rewriting, or introduce any new commands - I like `git` as it is.
+
+Usage: gr <targets> <cmd>
+
+## Targets
+
+The targets can be paths or tags. For example:
+
+    gr ~/foo ~/bar status
+    gr #work ls -lah
+
+Path targets be directories. Tags refer to sets of directories. They managed using the `tag` built-in.
+
+## Tagging
+
+    #tag            List directories associated with "tag"
+    #tag <cmd>      Run a command in the directories associated with "tag"
+    -t <tag> <cmd>  Run a command in the directories associated with "tag"
+    +#tag           Add a tag to the current directory
+    -#tag           Remove a tag from the current directory
+    +#tag <path>    Add a tag to <path>
+    -#tag <path>    Remove a tag from <path>
 
 For example:
 
-    gr git log -1
+    gr +#work ~/bar
 
-Returns the following:
+## Commands
 
-    in /home/m/mnt/gluejs
+The command can be either one of the built-in commands, or a shell command. For example:
 
-    commit 12b46164c5a0e930f9bc89ecd45728b38dd4fa74
-    Author: Mikito Takada <mikito.takada@gmail.com>
-    Date:   Wed Jun 26 03:19:52 2013 +0000
+    gr #work status
+    gr ~/foo ~/bar ls -lah
 
-        2.0.2
+To explicitly set the command, use `--`:
 
-    in /home/m/mnt/gr
+    gr ~/foo -- ~/bar.sh
+    gr #work -- git remote -v
 
-    commit 0791027e594e6bf6818a9a9af07d33f1d62c5a44
-    Author: Mikito Takada <mikito.takada@gmail.com>
-    Date:   Tue Jul 4 18:45:46 2013 -0700
+Tags can also be specified more explicitly; this is useful if you are using a scripting language which uses # for comments. For example `gr -t work -t play` is the same as `gr #work #play`.
 
-        Initial import
+## Built-in commands:
 
-Commands prefixed with `gr` will be run in every directory under `~` that has a `.git` directory inside it.
+    gr list        List all known repositories and their tags
 
-It doesn't do any command rewriting, or introduce any new commands - I like `git` as it is.
+    gr tag ..
+      add <t>         Add a tag to the current directory
+      rm <t>          Remove a tag from the current directory
+      add <t> <path>  Add a tag to <path>
+      rm <t> <path>   Remove a tag from <path>
+      list            List all tags (default action)
+
+    gr status    Displays the (git) status of the directory.
+
+    gr config ..
+      get <k>       Get a config key (can also be a path, e.g. "tags.foo")
+      set <k> <v>   Set a config key (overwrites existing value)
+      add <k> <v>   Add a value to a config key (appends rather than overwriting)
+      rm <k> <v>    Remove a value from a config key (if it exists)
+      list          List all configuration (default action)
+
+    gr help        Show this help
+    gr version     Version info
+
 
 ## Todo
 
-- gr ls / gr list
-- gr help
 - gr bootstrap url
-- gr group
 - filter plugins
-- gr -- ~/mnt/* style path expressions
 
 ## Installation
 
@@ -49,21 +103,6 @@ which was the original name.
 
 
 ## Aliases
-
-`gr` is a replacement for the following zsh function:
-
-    gr() {
-     local cmd="$*"
-     for dir in /home/{a,b,c}; do
-      (
-       print "\nin $dir"
-       cd $dir
-       eval "$cmd"
-      )
-     done
-    }
-
-It has the added benefit of finding new git repositories rather than requiring maintenance.
 
 Useful aliases:
 

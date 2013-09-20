@@ -13,6 +13,7 @@ function Gr() {
   this.homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
   this.config = new Config(this.homePath+'/.grconfig.json');
   this.stack = [];
+  this.format = 'human';
 }
 
 Gr.prototype.exclude = function(arr) {
@@ -50,6 +51,21 @@ Gr.prototype.preprocess = function(argv) {
         isExpandable = true;
         index++;
         break;
+      case '-t':
+        // replace -t foo with #foo
+        if(argv[index].length == 2) {
+          argv.splice(index, 2, '#' + argv[index+1]);
+          isExpandable = true;
+          index += 2;
+        }
+        break;
+      case '--':
+        // ignore strings starting with -- but not --
+        if(argv[index].length > 2) {
+          isExpandable = true;
+          index++;
+        }
+        break;
     }
   } while(isExpandable && index < argv.length);
   return argv;
@@ -67,28 +83,41 @@ Gr.prototype.parseTargets = function(argv) {
       break;
     }
     first = argv[0].charAt(0);
-    if(first == '#') {
-      // #tags
-      var key = 'tags.'+argv[0].substr(1),
-          value = this.config.get(key);
+    switch(first) {
+      case '#':
+        // #tags
+        var key = 'tags.'+argv[0].substr(1),
+            value = this.config.get(key);
 
-      if(typeof value !== 'undefined') {
-        (Array.isArray(value) ? value : [ value]).forEach(function(path) {
-          self.list.add(path);
-        });
-      }
-      processed++;
-      isTarget = true;
-      argv.shift();
-    } else if(first == '~' || first == '/' || first == '.') {
-      // paths
-      targetPath = path.resolve(process.cwd(), argv[0]);
-      if(fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
-        this.list.add(targetPath);
+        if(typeof value !== 'undefined') {
+          (Array.isArray(value) ? value : [ value]).forEach(function(path) {
+            self.list.add(path);
+          });
+        }
         processed++;
         isTarget = true;
         argv.shift();
-      }
+        break;
+      case '~':
+      case '/':
+      case '.':
+        // paths
+        targetPath = path.resolve(process.cwd(), argv[0]);
+        if(fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
+          this.list.add(targetPath);
+          processed++;
+          isTarget = true;
+          argv.shift();
+        }
+        break;
+      default:
+        if(argv[0] == '--json') {
+          argv.shift();
+          this.format = 'json';
+          isTarget = true;
+          processed++;
+        }
+        break;
     }
   } while(isTarget && argv.length > 0);
 
@@ -111,13 +140,13 @@ Gr.prototype.parseTargets = function(argv) {
   delete argv['exclude'];
 
   // if the list is empty, warn
-  if(this.list.files.length == 0) {
+  if(this.list.files.length == 0 && this.format == 'human') {
     log.warn('No target paths matched. Perhaps no paths are associated with the tag you used?');
     log.warn('Running `gr tag list` for you...');
+    // FIXME only works when scanning returns results...
     this.list.add(process.cwd());
     argv = ['tag', 'list'];
   }
-
   // return the remaining argv
   return argv;
 };
@@ -135,12 +164,20 @@ Gr.prototype.use = function(route, fn) {
 Gr.prototype.exec = function(argv, exit) {
   var self = this,
       tasks = [];
-  this.list.files.forEach(function(file) {
-   var cwd = path.dirname(file.name);
+
+  // if no paths, just push one task
+  if(this.list.files.length == 0) {
     tasks.push(function(onDone) {
-      self.handle(cwd, argv, onDone, exit);
+      self.handle('', argv, onDone, exit);
     });
-  });
+  } else {
+    this.list.files.forEach(function(file) {
+     var cwd = path.dirname(file.name);
+      tasks.push(function(onDone) {
+        self.handle(cwd, argv, onDone, exit);
+      });
+    });
+  }
 
   function series(task) {
     if(task) {
@@ -168,7 +205,7 @@ Gr.prototype.handle = function(path, argv, done, exit) {
     layer = stack[index++];
     // all done
     if (!layer) {
-      log.info('No command matched.');
+      log.info('No command matched:', argv);
       return;
     }
     isMatch = (layer.route === '');
@@ -195,6 +232,7 @@ Gr.prototype.handle = function(path, argv, done, exit) {
       config: self.config,
       argv: rest,
       path: path,
+      format: self.format,
       done: done,
       exit: exit
     };

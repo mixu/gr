@@ -36,7 +36,15 @@ function remove(req, res, next) {
   }
 
   req.config.remove(key, process.cwd());
-  log.info('remove', key, process.cwd(), '=>', req.config.get(key));
+
+  switch(req.format) {
+    case 'json':
+      break;
+    case 'human':
+    default:
+      log.info('remove', key, process.cwd(), '=>', req.config.get(key));
+  }
+
   req.config.save();
   req.exit();
 }
@@ -44,16 +52,34 @@ function remove(req, res, next) {
 function list(req, res, next) {
   var key = (req.argv[0] ? 'tags.'+req.argv[0] : 'tags'),
       obj = req.config.get(key);
-  if(typeof obj == 'object' && obj) {
-    Object.keys(obj).forEach(function(tag) {
+
+  if(Array.isArray(obj)) {
+    // result is an array, usually like "tags.foo" => [ paths ]
+    if(req.format == 'human') {
       console.log(
         style('Paths tagged ', 'gray') +
-        style('#'+tag, 'white') +
-        ': ' + obj[tag].join(', ')
+        style('#'+req.argv[0], 'white') +
+        ': ' + obj.join(', ')
       );
+    } else {
+      console.log(JSON.stringify(obj, null, 2));
+    }
+  } else if(typeof obj == 'object' && obj) {
+    // result is an object, usually like "tags" => { foo: [ paths] }
+    Object.keys(obj).forEach(function(tag) {
+      var val = obj[tag];
+      if(req.format == 'human') {
+        console.log(
+          style('Paths tagged ', 'gray') +
+          style('#'+tag, 'white') +
+          ': ' + (Array.isArray(val) ? val.join(', ') : val)
+        );
+      } else {
+        console.log(JSON.stringify(obj[tag], null, 2));
+      }
     });
 
-    if(Object.keys(obj).length == 0) {
+    if(Object.keys(obj).length == 0 && req.format == 'human') {
       console.log('No tags have been defined.');
     }
   }

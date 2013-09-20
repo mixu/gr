@@ -70,8 +70,18 @@ gr.use(require('../plugins/run.js'));
 
 // preprocessing: expand +#tag / -#tag
 var argv = gr.preprocess(process.argv.slice(2));
+// process.stderr.write(JSON.stringify(argv));
+
 // parse targets
 argv = gr.parseTargets(argv);
+// process.stderr.write(JSON.stringify(argv));
+
+// --json #foo #bar => will just output
+if(argv.length == 0 && gr.format == 'json') {
+  console.log(JSON.stringify(gr.list.files, null, 2));
+  return;
+}
+
 // execute for each target
 gr.exec(argv, function() {
   // console.log('last!');

@@ -17,9 +17,11 @@ module.exports = function(req, res, next) {
     // for "git" tasks, add the color option
     parts.splice(1, 0, '-c color.ui=always');
   }
-  console.log(
-    style('\nin ' + dirname, 'gray') +
-    style(path.basename(req.path), 'white') + '\n'
-    );
+  if(req.format == 'human') {
+    console.log(
+      style('\nin ' + dirname, 'gray') +
+      style(path.basename(req.path), 'white') + '\n'
+      );
+  }
   run(task.join(' '), req.path, req.done);
 };

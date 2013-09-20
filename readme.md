@@ -1,10 +1,20 @@
 # gr
 
-Multiple git repository management tool
+`gr` is a tool for managing multiple git repositories.
 
-`gr` is a command line tool that allows you to manage multiple git repositories.
+## Features
 
-It works by tagging directories with tags:
+- Hashtag all the things! `gr #work foo` will run the command `foo` in all the paths tagged #work.
+- Auto-discovery of git repositories for easy setup and tag management.
+- `gr` does not reinvent any git operations: instead, it passes through and runs any unknown commands. All your git-fu will still work! e.g. `gr #work git fetch` is the same as running `git fetch` in each all the paths tagged #work.
+- Built-in commands for common pain points:
+  - `status` for one-line summaries of repos (modified, behind/ahead, tags)
+  - `bootstrap` for fetching repos
+- Extensible via plugins and middleware: REST API/[Connect](http://senchalabs.github.com/connect)-style request handlers (`function(req, res, next) { ... }`
+
+## Example
+
+`gr` works by tagging directories with tags:
 
     gr +#work ~/mnt/gluejs ~/mnt/microee
 

@@ -1,8 +1,36 @@
 var assert = require('assert'),
-    util = require('util');
+    util = require('util'),
+    path = require('path'),
+    exec = require('child_process').exec;
+
+var binpath = path.normalize(__dirname + '/../bin/gr'),
+    fixturepath = path.normalize(__dirname + '/fixtures');
+
+function run(args, cwd, onDone) {
+  exec(binpath +' ' + args, {
+        cwd: cwd,
+        maxBuffer: 1024*1024 // 1Mb
+      }, function (err, stdout, stderr) {
+        var json;
+        if(stderr) {
+          console.log('stderr: ' + stderr);
+        }
+        if (err !== null) {
+          throw err;
+        }
+        try {
+          json = JSON.parse(stdout);
+        } catch(e) {
+          console.error('Cannot parse', stdout);
+          return onDone();
+        }
+        onDone(json);
+      });
+}
 
 exports['gr'] = {
 
+/*
   '--config lists configuration': function() {
     gr.exec([ 'config' ], function(err, result) {
 
@@ -26,49 +54,72 @@ exports['gr'] = {
 
     });
   },
+*/
 
-  'can tag a new directory': function() {
-    gr.exec([ '+#foo' ], function(result) {
-
+  'can tag a new directory': function(done) {
+    var p = fixturepath+'/a';
+    run('--json +#foo', p, function(result) {
+      // get the answer
+      run('--json tag ls foo', p, function(result) {
+        assert.ok(Array.isArray(result));
+        assert.ok(result.some(function(v) {
+          return v == p;
+        }));
+        p = fixturepath + '/b';
+        run('--json tag add bar', p, function(result) {
+          // get the answer
+          run('--json tag ls bar', p, function(result) {
+            assert.ok(Array.isArray(result));
+            assert.ok(result.some(function(v) {
+              return v == p;
+            }));
+            done();
+          });
+        });
+      });
     });
-    gr.exec([ 'tag', 'add', 'foo' ], function(result) {
-
+  },
+  'can execute a command accross multiple directories using a tag': function(done) {
+    var p = fixturepath+'/a';
+    // #foo ls -lah
+    run('--json -t foo ls -lah', p, function(result) {
+      console.log(result);
+      done();
     });
   },
 
-  'can execute a command accross multiple directories using a tag': function() {
-    gr.exec([ '#foo', 'bar' ], function(result) {
-
-    });
-    gr.exec([ 'tag', 'foo', 'bar' ], function(result) {
-
-    });
-  },
-
-  'can list all directories by tag': function() {
-    gr.exec([ '#foo' ], function(result) {
-
-    });
-    gr.exec([ 'tag', 'foo' ], function(result) {
-
+  'can list all directories by tag': function(done) {
+    var p = fixturepath+'/a';
+    // #foo
+    // tag foo
+    run('--json -t foo', p, function(result) {
+      console.log(result);
+      done();
     });
   },
 
-  'can list all tags': function() {
-    gr.exec([ 'tag', 'list' ], function(result) {
-
+  'can list all tags': function(done) {
+    var p = fixturepath+'/a';
+    run('--json tag list', p, function(result) {
+      console.log(result);
+      done();
     });
   },
 
   'can untag a directory': function() {
-    gr.exec([ '-#foo' ], function(result) {
-
-    });
-    gr.exec([ 'tag', 'rm', 'foo' ], function(result) {
-
+    // -#foo
+    // tag rm foo
+    run('--json -#foo', p, function(result) {
+      console.log(result);
+      p = fixturepath + '/b';
+      run('--json tag rm bar', p, function(result) {
+        console.log(result);
+        done();
+      });
     });
   },
 
+/*
   'can execute a command accross multiple directories using a smart target': function() {
 
   },
@@ -92,6 +143,7 @@ exports['gr'] = {
   '--confirm applies xargs -p to the command': function() {
 
   }
+*/
 };
 
 // if this module is the script being run, then run the tests:

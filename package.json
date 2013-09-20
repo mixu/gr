@@ -1,10 +1,10 @@
 {
   "name": "git-run",
   "version": "0.0.0",
-  "description": "Multiple git repository management tool",
-  "main": "find-git.js",
+  "description": "A tool for managing multiple git repositories",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make tests"
   },
   "repository": {
     "type": "git",

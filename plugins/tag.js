@@ -86,8 +86,63 @@ function list(req, res, next) {
   req.exit();
 }
 
+var spawn = require('child_process').spawn,
+    os = require('os'),
+    tty = require('tty'),
+    findBySubdir = require('../lib/find-by-subdir.js');
+
+function discover(req, res, next) {
+  var editor = process.env['GIT_EDITOR'] || process.env['EDITOR'] || 'nano',
+      tmpfile = os.tmpDir() + '/foo.txt';
+
+  console.log(findBySubdir(req.gr.homePath, [ '.git' ]));
+
+  return req.exit();
+
+  fs.writeFileSync(tmpfile, fs.readFileSync(__dirname + '/discover.template.md'));
+
+  var task = spawn(editor, [ tmpfile ], {
+    env: process.env,
+    stdout: 'inherit'
+  });
+
+  function indata(c) {
+    task.stdin.write(c);
+  }
+  function outdata(c) {
+    process.stdout.write(c);
+  }
+
+  task.on('exit', function(code) {
+    process.stdin.setRawMode(false);
+    process.stdin.pause();
+    process.stdin.removeListener('data', indata);
+    task.stdout.removeListener('data', outdata);
+    if(code != 0) {
+      console.log('');
+      console.log('spawn-task: "' +line+ '" exited with nonzero exit code: '+ code);
+      // task.emit('error', new Error('Child process exited with nonzero exit code: '+ code));
+    }
+  });
+
+  task.once('close', function() {
+    var lines = fs.readFileSync(tmpfile).toString().split('\n').filter(function(line) {
+                    return line.charAt(0) != '#' && line.trim() != '';
+                  });
+
+    console.log(lines);
+  });
+
+  process.stdin.resume();
+  process.stdin.on('data', indata);
+  task.stdout.on('data', outdata);
+  process.stdin.setRawMode(true);
+
+}
+
 module.exports = {
   add: add,
   remove: remove,
-  list: list
+  list: list,
+  discover: discover
 };

@@ -107,6 +107,7 @@ exports['gr'] = {
   },
 
   'can untag a directory': function() {
+    var p = fixturepath+'/a';
     // -#foo
     // tag rm foo
     run('--json -#foo', p, function(result) {

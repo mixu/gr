@@ -63,6 +63,7 @@ gr.use(['tag', 'remove'], tag.remove);
 gr.use(['tag', 'rm'], tag.remove);
 gr.use(['tag', 'list'], tag.list);
 gr.use(['tag', 'ls'], tag.list);
+gr.use(['tag', 'discover'], tag.discover);
 gr.use(['tag'], tag.list);
 
 // default: run the remainder as a shell task

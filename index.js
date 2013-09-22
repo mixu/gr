@@ -1,6 +1,5 @@
 var fs = require('fs'),
     path = require('path'),
-    List = require('./lib/list.js'),
     style = require('./lib/style.js'),
     Config = require('./lib/config.js'),
     parse = require('./lib/argparse.js'),
@@ -9,11 +8,11 @@ var fs = require('fs'),
 var filterRegex = require('./lib/list-tasks/filter-regex.js');
 
 function Gr() {
-  this.list = new List();
   this.homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
   this.config = new Config(this.homePath+'/.grconfig.json');
   this.stack = [];
   this.format = 'human';
+  this.directories = [];
 }
 
 Gr.prototype.exclude = function(arr) {
@@ -26,7 +25,7 @@ Gr.prototype.exclude = function(arr) {
     return new RegExp(expr);
   });
 
-  filterRegex(this.list, excludeList);
+  filterRegex(this.directories, excludeList);
 };
 
 Gr.prototype.preprocess = function(argv) {
@@ -91,8 +90,10 @@ Gr.prototype.parseTargets = function(argv) {
 
         if(typeof value !== 'undefined') {
           (Array.isArray(value) ? value : [ value]).forEach(function(path) {
-            self.list.add(path);
+            self.directories.push(path);
           });
+        } else if(this.format == 'human') {
+          log.error('Tag '+argv[0]+' is not associated with any paths.');
         }
         processed++;
         isTarget = true;
@@ -104,7 +105,7 @@ Gr.prototype.parseTargets = function(argv) {
         // paths
         targetPath = path.resolve(process.cwd(), argv[0]);
         if(fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
-          this.list.add(targetPath);
+          this.directories.push(targetPath);
           processed++;
           isTarget = true;
           argv.shift();
@@ -122,31 +123,16 @@ Gr.prototype.parseTargets = function(argv) {
   } while(isTarget && argv.length > 0);
 
   if(processed == 0) {
-    // use default setting from config
-    var repos = {};
-    // if the default setting is "scan", then scan
-    this.list.add(this.homePath);
-    // save the scanned repo list
-    this.list.files.forEach(function(file) {
-      repos[file.name] = {};
-    });
-    this.config.items.repos = repos;
-    this.config.save();
-
+    // default to using all paths
+    this.addAll();
   }
 
+  // unique, non-empty only
+  this.dirUnique();
   // apply exclusions
   this.exclude([].concat(this.config.get('exclude'), argv['exclude']));
   delete argv['exclude'];
 
-  // if the list is empty, warn
-  if(this.list.files.length == 0 && this.format == 'human') {
-    log.warn('No target paths matched. Perhaps no paths are associated with the tag you used?');
-    log.warn('Running `gr tag list` for you...');
-    // FIXME only works when scanning returns results...
-    this.list.add(process.cwd());
-    argv = ['tag', 'list'];
-  }
   // return the remaining argv
   return argv;
 };
@@ -166,13 +152,12 @@ Gr.prototype.exec = function(argv, exit) {
       tasks = [];
 
   // if no paths, just push one task
-  if(this.list.files.length == 0) {
+  if(this.directories.length == 0) {
     tasks.push(function(onDone) {
       self.handle('', argv, onDone, exit);
     });
   } else {
-    this.list.files.forEach(function(file) {
-     var cwd = path.dirname(file.name);
+    this.directories.forEach(function(cwd) {
       tasks.push(function(onDone) {
         self.handle(cwd, argv, onDone, exit);
       });
@@ -206,6 +191,10 @@ Gr.prototype.handle = function(path, argv, done, exit) {
     // all done
     if (!layer) {
       log.info('No command matched:', argv);
+      // if the list is empty, warn
+      if(self.directories.length == 0 && self.format == 'human') {
+        log.warn('No target paths matched. Perhaps no paths are associated with the tag you used?');
+      }
       return;
     }
     isMatch = (layer.route === '');
@@ -257,5 +246,31 @@ Gr.prototype.getTagsByPath = function(cwd) {
   });
   return tags;
 };
+
+Gr.prototype.addAll = function() {
+  var self = this;
+  if(this.config && this.config.items && this.config.items.tags) {
+    Object.keys(this.config.items.tags).forEach(function(tag){
+      if(Array.isArray(self.config.items.tags[tag])) {
+        self.config.items.tags[tag].forEach(function(dirname) {
+          self.directories.push(dirname);
+        });
+      }
+    });
+  }
+};
+
+Gr.prototype.dirUnique = function() {
+  var last;
+  this.directories = this.directories.filter(function(k) {
+                    return !!k;
+                  })
+                  .sort()
+                  .filter(function(key) {
+                    var isDuplicate = (key == last);
+                    last = key;
+                    return !isDuplicate;
+                  });
+}
 
 module.exports = Gr;

@@ -35,14 +35,15 @@ function remove(req, res, next) {
     }
   }
 
-  req.config.remove(key, process.cwd());
+  req.config.remove(key, targetPath);
 
   switch(req.format) {
     case 'json':
+      console.log(JSON.stringify({ op: 'rm', tag: req.argv[0], path: targetPath}));
       break;
     case 'human':
     default:
-      log.info('remove', key, process.cwd(), '=>', req.config.get(key));
+      log.info('remove', key, targetPath, '=>', req.config.get(key));
   }
 
   req.config.save();
@@ -66,21 +67,29 @@ function list(req, res, next) {
     }
   } else if(typeof obj == 'object' && obj) {
     // result is an object, usually like "tags" => { foo: [ paths] }
-    Object.keys(obj).forEach(function(tag) {
-      var val = obj[tag];
-      if(req.format == 'human') {
-        console.log(
-          style('Paths tagged ', 'gray') +
-          style('#'+tag, 'white') +
-          ': ' + (Array.isArray(val) ? val.join(', ') : val)
-        );
-      } else {
-        console.log(JSON.stringify(obj[tag], null, 2));
-      }
-    });
-
+    if(req.format == 'human') {
+      Object.keys(obj).forEach(function(tag) {
+        var val = obj[tag];
+          console.log(
+            style('Paths tagged ', 'gray') +
+            style('#'+tag, 'white') +
+            ': ' + (Array.isArray(val) ? val.map(function(s) {
+              return s.replace(req.gr.homePath, '~');
+            }).join(', ') : val)
+          );
+      });
+    } else {
+      console.log(JSON.stringify(obj, null, 2));
+    }
     if(Object.keys(obj).length == 0 && req.format == 'human') {
       console.log('No tags have been defined.');
+    }
+  } else if(req.format == 'json') {
+    // keep the result parseable, even if there is no corresponding tag
+    if(req.argv[0]) {
+      console.log('[]');
+    } else {
+      console.log('{}');
     }
   }
   req.exit();
@@ -93,7 +102,7 @@ var spawn = require('child_process').spawn,
 
 function discover(req, res, next) {
   var pathMaxLen = Object.keys(req.config.items.repos).reduce(function(prev, current) {
-        return Math.max(prev, current.replace(req.gr.homePath, '~/').length);
+        return Math.max(prev, current.replace(req.gr.homePath, '~').length);
       }, 0);
 
   function pad(s, len) {
@@ -157,6 +166,9 @@ function discover(req, res, next) {
     // now read back the file
     var lines = fs.readFileSync(tmpfile).toString().split('\n');
     applyTags(req, lines);
+    if(req.format == 'human') {
+      console.log('Tags updated. Run `gr status` or `gr tag list` to see the current state.');
+    }
     req.exit();
     return;
   });

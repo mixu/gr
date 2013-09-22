@@ -21,14 +21,150 @@ function run(args, cwd, onDone) {
         try {
           json = JSON.parse(stdout);
         } catch(e) {
-          console.error('Cannot parse', stdout);
-          return onDone();
+          // console.error('Cannot parse', stdout);
+          return onDone(stdout);
         }
         onDone(json);
       });
 }
 
 exports['gr'] = {
+
+// Tagging:
+
+//    #tag            List directories associated with "tag"
+
+  'can list all directories by tag': function(done) {
+    var p = fixturepath+'/a';
+    // #foo
+    run('--json -t foo', p, function(result) {
+      assert.ok(Array.isArray(result));
+      assert.ok(result.some(function(v) {
+        return v == p;
+      }));
+      done();
+    });
+  },
+
+//    #tag <cmd>      Run a command in the directories associated with "tag"
+//    -t <tag> <cmd>  Run a command in the directories associated with "tag"
+
+  'can execute a command across multiple directories using a tag': function(done) {
+    var p = fixturepath+'/a';
+    // #foo ls -lah
+    run('-t foo ls -lah', p, function(result) {
+      // check that one of the lines contains "a.txt"
+      assert.ok(/a\.txt/.test(result));
+      done();
+    });
+  },
+
+  'can mix tags and paths for command execution': function() {
+    // gr #foo -t bar ~/bar/baz cmd
+  },
+
+  'can set the command explicitly using --': function() {
+    // gr #foo -- cmd
+  },
+
+  'a target that is not a directory is treated as a command': function() {
+    // gr dir file.sh
+  },
+
+  'if no target is given, then all tagged paths are used': function() {
+
+  },
+
+//     +#tag           Add a tag to the current directory
+//     tag add <tag>   Alternative to +#tag
+
+  'can tag a new directory (cwd)': function(done) {
+    var p = fixturepath+'/a';
+    run('--json +#foo', p, function(result) {
+      // get the answer
+      run('--json tag ls foo', p, function(result) {
+        assert.ok(Array.isArray(result));
+        assert.ok(result.some(function(v) {
+          return v == p;
+        }));
+        p = fixturepath + '/b';
+        run('--json tag add bar', p, function(result) {
+          // get the answer
+          run('--json tag ls bar', p, function(result) {
+            assert.ok(Array.isArray(result));
+            assert.ok(result.some(function(v) {
+              return v == p;
+            }));
+            done();
+          });
+        });
+      });
+    });
+  },
+
+//    +#tag <path>    Add a tag to <path>
+//    tag add <t> <p> Alternative to +#tag <path>
+// TODO
+
+// gr +#foo path1 path2 path3
+// TODO
+
+//     -#tag           Remove a tag from the current directory
+//     tag rm <tag>    Alternative to -#tag
+
+  'can untag a directory (cwd)': function(done) {
+    var p = fixturepath+'/a';
+    // -#foo
+    // tag rm foo
+    run('--json -#foo', p, function(result) {
+      assert.deepEqual(result, { op: 'rm', tag: 'foo', path: p });
+      run('--json tag ls foo', p, function(result) {
+        assert.ok(Array.isArray(result));
+        assert.ok(!result.some(function(v) {
+          return v == p;
+        }));
+        p = fixturepath + '/b';
+        run('--json tag rm bar', p, function(result) {
+          assert.deepEqual(result, { op: 'rm', tag: 'bar', path: p });
+          done();
+        });
+
+      });
+
+    });
+  },
+
+//     -#tag <path>    Remove a tag from <path>
+//     tag rm <t> <p>  Alternative to -#tag <path>
+// TODO
+
+// gr -#foo path1 path2 path3
+// TODO
+
+//     tag list        List all tags (default action)
+
+  'can list all tags': function(done) {
+    var p = fixturepath+'/a';
+    run('--json tag list', p, function(result) {
+      assert.ok(typeof result == 'object');
+      assert.ok(result['foo']);
+      assert.ok(result['foo'].some(function(v) {
+        return v == p;
+      }));
+      done();
+    });
+  },
+
+//     tag discover    Auto-discover git paths under ~/
+// TODO
+
+
+//     gr list        List all known repositories and their tags
+// TODO
+
+//     gr status    Displays the (git) status of the selected directories.
+// TODO
+
 
 /*
   '--config lists configuration': function() {
@@ -56,92 +192,16 @@ exports['gr'] = {
   },
 */
 
-  'can tag a new directory': function(done) {
-    var p = fixturepath+'/a';
-    run('--json +#foo', p, function(result) {
-      // get the answer
-      run('--json tag ls foo', p, function(result) {
-        assert.ok(Array.isArray(result));
-        assert.ok(result.some(function(v) {
-          return v == p;
-        }));
-        p = fixturepath + '/b';
-        run('--json tag add bar', p, function(result) {
-          // get the answer
-          run('--json tag ls bar', p, function(result) {
-            assert.ok(Array.isArray(result));
-            assert.ok(result.some(function(v) {
-              return v == p;
-            }));
-            done();
-          });
-        });
-      });
-    });
-  },
-  'can execute a command accross multiple directories using a tag': function(done) {
-    var p = fixturepath+'/a';
-    // #foo ls -lah
-    run('--json -t foo ls -lah', p, function(result) {
-      console.log(result);
-      done();
-    });
-  },
+// MISC:
+//    gr help        Show this help
+//    gr version     Version info
 
-  'can list all directories by tag': function(done) {
-    var p = fixturepath+'/a';
-    // #foo
-    // tag foo
-    run('--json -t foo', p, function(result) {
-      console.log(result);
-      done();
-    });
-  },
-
-  'can list all tags': function(done) {
-    var p = fixturepath+'/a';
-    run('--json tag list', p, function(result) {
-      console.log(result);
-      done();
-    });
-  },
-
-  'can untag a directory': function() {
-    var p = fixturepath+'/a';
-    // -#foo
-    // tag rm foo
-    run('--json -#foo', p, function(result) {
-      console.log(result);
-      p = fixturepath + '/b';
-      run('--json tag rm bar', p, function(result) {
-        console.log(result);
-        done();
-      });
-    });
-  },
+// TODO:
+// enabling / disabling plugins
+//    gr bootstramp
 
 /*
-  'can execute a command accross multiple directories using a smart target': function() {
-
-  },
-
-  'can ignore a directory via configuration': function() {
-
-  },
-
-  'can add a directory via configuration': function() {
-
-  },
-
-  'can add a root directory for scanning via configuration': function() {
-
-  },
-
   'executing bootstrap queues the right commands': function() {
-
-  },
-
-  '--confirm applies xargs -p to the command': function() {
 
   }
 */

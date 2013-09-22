@@ -77,9 +77,13 @@ var argv = gr.preprocess(process.argv.slice(2));
 argv = gr.parseTargets(argv);
 // process.stderr.write(JSON.stringify(argv));
 
-// --json #foo #bar => will just output
-if(argv.length == 0 && gr.format == 'json') {
-  console.log(JSON.stringify(gr.list.files, null, 2));
+// #foo #bar => will just output
+if(argv.length == 0) {
+  if(gr.format == 'json') {
+    console.log(JSON.stringify(gr.directories, null, 2));
+  } else {
+    log.info('Paths', gr.directories);
+  }
   return;
 }
 
@@ -87,12 +91,3 @@ if(argv.length == 0 && gr.format == 'json') {
 gr.exec(argv, function() {
   // console.log('last!');
 });
-
-
-// TODO:
-// test gr #foo #bar
-// gr #foo -- cmd
-// gr dir file.sh
-// gr -t work -t play
-// gr +#foo path1 path2 path3
-// gr -#foo path1 path2 path3

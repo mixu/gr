@@ -243,4 +243,19 @@ Gr.prototype.handle = function(path, argv, done, exit) {
   next();
 };
 
+Gr.prototype.getTagsByPath = function(cwd) {
+  var self = this,
+      tags = [];
+  if(!cwd || !this.config || !this.config.items || !this.config.items.tags) {
+    return tags;
+  }
+  Object.keys(this.config.items.tags).forEach(function(tag){
+    if(Array.isArray(self.config.items.tags[tag]) &&
+       self.config.items.tags[tag].indexOf(cwd) > -1) {
+      tags.push(tag);
+    }
+  });
+  return tags;
+};
+
 module.exports = Gr;

@@ -92,14 +92,41 @@ var spawn = require('child_process').spawn,
     findBySubdir = require('../lib/find-by-subdir.js');
 
 function discover(req, res, next) {
+  var pathMaxLen = Object.keys(req.config.items.repos).reduce(function(prev, current) {
+        return Math.max(prev, current.replace(req.gr.homePath, '~/').length);
+      }, 0);
+
+  function pad(s, len) {
+    return (s.toString().length < len ?
+      new Array(len - s.toString().length).join(' ') : '');
+  }
+
+
   var editor = process.env['GIT_EDITOR'] || process.env['EDITOR'] || 'nano',
-      tmpfile = os.tmpDir() + '/foo.txt';
+      tmpfile = os.tmpDir() + '/gr-repos-tmp.txt',
+      gitPaths = findBySubdir(req.gr.homePath, [ '.git' ]),
+      append = '';
 
-  console.log(findBySubdir(req.gr.homePath, [ '.git' ]));
+  // for each git path:
+  gitPaths.sort().forEach(function(dir) {
+    var tags, humanDir;
+    // 1) normalize by taking dirname, changing homePath to ~/ and sorting
+    dir = path.dirname(dir);
+    humanDir = dir.replace(new RegExp('^'+req.gr.homePath+'/'), '~/');
+    // 2) search for matching tags
+    tags = req.gr.getTagsByPath(dir);
 
-  return req.exit();
+    // 3) append to the template
+    append += humanDir +
+              pad(humanDir, pathMaxLen) +
+              tags.map(function(s) { return '#' + s; }).join(' ') + '\n';
+  });
 
-  fs.writeFileSync(tmpfile, fs.readFileSync(__dirname + '/discover.template.md'));
+  // now, write the file
+  // and launch the user's editor
+
+  fs.writeFileSync(tmpfile,
+    fs.readFileSync(__dirname + '/discover.template.md').toString() + append);
 
   var task = spawn(editor, [ tmpfile ], {
     env: process.env,
@@ -114,6 +141,7 @@ function discover(req, res, next) {
   }
 
   task.on('exit', function(code) {
+    // cleanup
     process.stdin.setRawMode(false);
     process.stdin.pause();
     process.stdin.removeListener('data', indata);
@@ -126,18 +154,65 @@ function discover(req, res, next) {
   });
 
   task.once('close', function() {
-    var lines = fs.readFileSync(tmpfile).toString().split('\n').filter(function(line) {
-                    return line.charAt(0) != '#' && line.trim() != '';
-                  });
-
-    console.log(lines);
+    // now read back the file
+    var lines = fs.readFileSync(tmpfile).toString().split('\n');
+    applyTags(req, lines);
+    req.exit();
+    return;
   });
 
   process.stdin.resume();
   process.stdin.on('data', indata);
   task.stdout.on('data', outdata);
   process.stdin.setRawMode(true);
+}
 
+function applyTags(req, lines) {
+  // filter out commented lines
+  lines = lines.filter(function(line) {
+            return line.charAt(0) != '#' && line.trim() != '';
+          });
+  lines.forEach(function(line) {
+    // split by whitespace
+    var parts = line.split(/\s+/),
+        // first part is an existing path
+        dirname = parts[0].replace('~', req.gr.homePath),
+        // subsequent parts are tags
+        tags = parts.slice(1).map(function(s) {
+          // # is optional
+          return s.replace(/^#/, '');
+        }),
+        confTags = (req && req.config && req.config.items &&
+                    req.config.items.tags ? req.config.items.tags : []);
+
+    // this includes both tags that exist, and tags that
+    // are new (e.g. not in tags yet)
+    var last,
+        allTags = Object.keys(confTags)
+                  .concat(tags)
+                  .filter(function(k) {
+                    return !!k;
+                  })
+                  .sort()
+                  .filter(function(key) {
+                    var isDuplicate = (key == last);
+                    last = key;
+                    return !isDuplicate;
+                  });
+
+    // set (rather than add/append) the tags for this directory
+    allTags.forEach(function(tag){
+      var shouldHaveTag = (tags.indexOf(tag) > -1),
+          hasTag = (Array.isArray(confTags[tag]) &&
+                    confTags[tag].indexOf(dirname) > -1);
+      if(shouldHaveTag && !hasTag) {
+        req.config.add('tags.'+tag, dirname);
+      } else if(!shouldHaveTag && hasTag) {
+        req.config.remove('tags.'+tag, dirname);
+      }
+    });
+  });
+  req.config.save();
 }
 
 module.exports = {

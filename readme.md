@@ -72,6 +72,10 @@ Run `gr status` or `gr tag list` to verify; and try `gr #work status` or `gr #wo
 
 You can run auto-discovery multiple times; it makes making bulk changes to tags quite easy.
 
+## Tab completion
+
+Just add `. <(gr completion)` to your `~/.bashrc` or `~/.zshrc` to enable tab completion.
+
 ## How I use gr
 
 Some examples:
@@ -124,7 +128,7 @@ The targets can be paths or tags. For example:
     gr ~/foo ~/bar status
     gr #work ls -lah
 
-Path targets be directories. Tags refer to sets of directories. They managed using the `tag` built-in.
+Path targets should be directories. Tags refer to sets of directories. They managed using the `tag` built-in.
 
 If you are using a scripting language that uses `#` for comments, you can also write tags as `-t foo`.
 
@@ -169,10 +173,6 @@ To explicitly set the command, use `--`:
 
 Tags can also be specified more explicitly; this is useful if you are using a scripting language which uses # for comments. For example `gr -t work -t play` is the same as `gr #work #play`.
 
-## Tab completion
-
-Just add `. <(gr completion)` to your `~/.bashrc` or `~/.zshrc` to enable tab completion.
-
 ## Built-in commands:
 
     gr tag ..
@@ -198,15 +198,77 @@ Just add `. <(gr completion)` to your `~/.bashrc` or `~/.zshrc` to enable tab co
     gr help        Show this help
     gr version     Version info
 
-## Writing plugins
+## Plugins
 
-Plugins are functions which are invoked once for each repository path specified by the user. This makes it easier to write plugins, since they do not need to handle executing against multiple repository paths explicitly.
-
-If you write a plugin, make sure to add the `gr` keyword to (in [package.json](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching npm by tag](https://npmjs.org/browse/keyword/gr). Also, file a PR against this readme if you want to have your plugin listed here.
+Plugins add further
 
 Here are the plugins that are currently available:
 
 - [bootstrap](#TODO): bootstraps a set of repositories from a config file.
+
+## Installing plugins
+
+Generally speaking, you need to do two things:
+
+1. install the plugin globally via npm: `npm install -g foo`
+2. configure `gr` to use the plugin: `gr config add plugins foo`
+
+The new commands should now be available.
+
+## Writing plugins
+
+Plugins are functions which are invoked once for each repository path specified by the user. This makes it easier to write plugins, since they do not need to handle executing against multiple repository paths explicitly.
+
+Plugins are treated a bit like a REST API: they are defined as "routes" on the `gr` object.
+
+Each plugin consists of an index file which is loaded when gr is started, and which should add new "routes":
+
+    module.exports = function(gr) {
+      // set up new commands on the gr object
+      gr.use(['foo', 'help'], function(req, res, next) {
+        console.log('Hello world');
+        req.exit(); // stop processing
+      });
+      gr.use('foo', function(req, res, next) {
+        console.log(req.argv, req.path);
+        req.done(); // can be called multiple times
+      });
+    };
+
+Of course, `req` and `res` in the handlers are not HTTP requests, but rather objects representing the target directory (a regular object) and process.stdout.
+
+Each "route" is called multiple times, each time with one path. Assuming `#work` matches two paths, `gr #work status` is translated into multiple indvidual function calls; one for each directory/repository tagged `#work`.
+
+      status({ path: '/home/m/foo', argv: ... }, process.stdout, next);
+      status({ path: '/home/m/bar', argv: ... }, process.stdout, next);
+
+There are three ways to stop processing:
+
+1. Call `res.done()`. This means that the command should be called again for the next path. This is useful for processing commands that target directories.
+2. Call `res.exit()`. This means that the command is complete, and `gr` should exit. For example, we don't want to show a help text multiple times if the user calls `gr #work help`.
+3. Call `next`. This means that the current handler does not want to handle the current request. Similar to how Connect works, this is mostly used for writing middleware or falling back on a different action.
+
+The `req` object describes the current request.
+
+- `req.argv`: the command line arguments passed to the command, excluding ones that have already matched. For example: given `app.use(['foo', 'add'], ...)` and `gr foo add bar`, `argv = [ 'bar' ]`.
+- `req.config`: the configuration object used by `gr`; allows you to read and write configuration values (see the code for details).
+- `req.path`: the full path to the repository directory for this call
+- `req.gr`: the instance of `gr` (see `index.js`)
+- `req.format`: The desired output format, either `human` or `json`.
+
+The `res` object controls
+
+- `res.done`: Call this function when you have completed processing the task.
+
+The `next` function is used if you decide not to handle the current request. Calling `next` will make the next matching request handler run. If you encounter an error, call `next(err)` to output the error.
+
+## Writing middleware
+
+Middleware are functions that extract additional metadata.
+
+- `req.git.remotes`: TODO - a hash of remotes (for example: `{ origin: 'git...'}`). Extracted via the git middleware.
+
+## A list of plugin ideas
 
 Here are some plugin ideas:
 
@@ -226,29 +288,9 @@ Here are some plugin ideas:
 - Ability to confirm each command (to make it possible to skip)
 - Ability expose other statuses, e.g. npm outdated
 
-Plugins are treated a bit like a REST API: they are defined as "routes" on the `gr` object.
+## Make your plugin searchable
 
-    app.use('status', function(req, res, next) {
-      // ...
-    });
-
-Of course, req and res are not HTTP requests, but rather objects representing the target directory (a regular object) and process.stdout.
-
-Here's one way to think about this: each command, such as `gr #work status` is translated into multiple indvidual function calls; one for each directory/repository tagged `#work`.
-
-    gr #work status
-      \-> status({ path: '/home/m/foo', argv: ... }, process.stdout, next)
-       -> status({ path: '/home/m/bar', argv: ... }, process.stdout, next)
-
-`req` properties:
-
-- `req.argv`: the command line arguments passed to the command, excluding ones that have already matched. For example: given `app.use(['foo', 'add'], ...)` and `gr foo add bar`, `argv = [ 'bar' ]`.
-- `req.done`: Call this function when you have completed processing the task.
-- `req.config`: the configuration object used by `gr`; allows you to read and write configuration values (see the code for details).
-- `req.path`: the full path to the repository directory for this call
-- `req.gr`: the instance of `gr` (see `index.js`)
-- `req.format`: The desired output format, either `human` or `json`.
-- `req.git.remotes`: TODO - a hash of remotes (for example: `{ origin: 'git...'}`). Extracted via the git middleware.
+If you write a plugin, make sure to add the `gr` keyword to (in [package.json](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching npm by tag](https://npmjs.org/browse/keyword/gr). Also, file a PR against this readme if you want to have your plugin listed here.
 
 ## Status matching idea
 

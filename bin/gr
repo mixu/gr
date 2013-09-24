@@ -56,9 +56,6 @@ gr.use(['config'], config.list);
 // list plugin
 gr.use('list', require('../plugins/list.js'));
 
-// nop plugin
-gr.use(['nop'],  require('../plugins/nop.js'));
-
 // status plugin
 gr.use(['status'], status);
 

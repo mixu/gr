@@ -1,5 +1,6 @@
 var assert = require('assert'),
     util = require('util'),
+    fs = require('fs'),
     path = require('path'),
     exec = require('child_process').exec;
 
@@ -28,7 +29,25 @@ function run(args, cwd, onDone) {
       });
 }
 
+var backup,
+    homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
+    confFile = homePath+'/.grconfig.json';
+
 exports['gr'] = {
+
+  before: function() {
+    // backup
+    if(fs.existsSync(confFile)) {
+      backup = fs.readFileSync(confFile);
+    }
+  },
+
+  after: function() {
+    // restore
+    if(backup) {
+      fs.writeFileSync(confFile, backup);
+    }
+  },
 
 // Tagging:
 
@@ -245,6 +264,7 @@ exports['gr'] = {
     },
 
     'rm <k> <v>    Remove a value from a config key (if it exists)': function(done) {
+      this.timeout(4000);
       var key = this.key, value = this.value, value2 = this.value + 'aa';
       run('--json config add ' + key + ' ' + value, fixturepath+'/a', function(result) {
         assert.deepEqual(result, { op: 'add', key: key, value: value, result: [ value ] });

@@ -13,6 +13,10 @@ module.exports = function(req, res, next) {
   var task = req.argv,
       dirname = path.dirname(req.path).replace(req.gr.homePath, '~') + path.sep;
 
+  if(task[0] == '--') {
+    task.shift();
+  }
+
   if(task[0] == 'git') {
     // for "git" tasks, add the color option
     parts.splice(1, 0, '-c color.ui=always');

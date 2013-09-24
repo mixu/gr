@@ -1,8 +1,8 @@
 ## Features
 
-- Hashtag all the things! `gr #work foo` will run the command `foo` in all the paths tagged #work.
+- Hashtag all the things! `gr #work foo` will run the command `foo` in all the paths tagged `#work`.
 - Auto-discovery of git repositories for easy setup and tag management.
-- `gr` does not reinvent any git operations: instead, it passes through and runs any unknown commands. All your git-fu will still work! e.g. `gr #work git fetch` is the same as running `git fetch` in each all the paths tagged #work.
+- `gr` does not reinvent any git operations: instead, it passes through and runs any unknown commands. All your git-fu will still work! e.g. `gr #work git fetch` is the same as running `git fetch` in each all the paths tagged `#work`.
 - Built-in commands for common pain points:
   - `status` for one-line summaries of repos (modified, behind/ahead, tags)
   - `bootstrap` for fetching repos
@@ -18,14 +18,24 @@
 
 After this, you can run any commands on the tagged directories simply by prefixing them with `gr #work`. For example:
 
-    gr #work git status -sb
+    gr #work status
 
 Outputs (actual output is colorized):
+
+    ~/mnt/gluejs           2 modified [ahead 2]      #work
+    ~/mnt/microee          Clean                     #work
+
+E.g. path, modified, ahead/behind remote, tags. Alternatively, you can use plain git commands for a more verbose report:
+
+    gr #work git status -sb
+
+Outputs:
 
     in ~/mnt/gluejs
 
     ## glue2
      M lib/runner/package-commonjs/index.js
+     M index.js
 
     in ~/mnt/microee
 
@@ -43,7 +53,7 @@ Use the auto-discovery feature to set up tags quickly:
 
     gr tag discover
 
-This searches all paths under your home path; generates a list and opens the list in your default console editor. This file will look like this:
+Auto-discovery searches all paths under your home path; generates a list and opens the list in your default console editor. This file will look like this:
 
     # Found the following directories with `.git` directories.
     #
@@ -60,17 +70,39 @@ Add tags after each path, save the file and exit. Now, your tags are set up.
 
 Run `gr status` or `gr tag list` to verify; and try `gr #work status` or `gr #work ls -lah` to see how commands are executed. `status` is a built-in command; `ls -lah` is not so it is run in each of the paths.
 
+You can run auto-discovery multiple times; it makes making bulk changes to tags quite easy.
+
 ## How I use gr
 
-I have a couple of common basic use cases:
+Some examples:
 
-- to update all my work repos: `gr #work git fetch` and then `gr #work status`. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
-- to see the diffs: `gr #work git diff` or `gr #work git diff --cached`
-- to see the npm modules installed in the repos: `gr #work npm ls`
-- to print a graph-like log: `gr #work git --no-pager log --decorate --graph --oneline -n 3`
+### To update all my work repos
+
+`gr #work git fetch` and then `gr #work status`. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
+
+### To see diffs
+
+`gr #work git diff` or `gr #work git diff --cached`.
+
+### To run jshint
+
+`gr #work jshint . --exclude=**/node_modules`
+
+### To rebuild all my writing via make
+
+`gr #write make`
+
+### To list the npm modules installed
+
+`gr #work npm ls`
+
+### To print a graph-like log
+
+`gr #work git --no-pager log --decorate --graph --oneline -n 3`
 
 Of course, I don't actually type these out. Instead, I am using `zsh` aliases. `grd` is for diff, `grdc` is for diff --cached; `grl` is for the log. For example, in `.zshrc`:
 
+    alias grs="gr status"
     alias grl="gr git --no-pager log --decorate --graph --oneline -n 3"
 
 You can set up similar aliases for `bash`; Google is your friend here.
@@ -137,6 +169,10 @@ To explicitly set the command, use `--`:
 
 Tags can also be specified more explicitly; this is useful if you are using a scripting language which uses # for comments. For example `gr -t work -t play` is the same as `gr #work #play`.
 
+## Tab completion
+
+Just add `. <(gr completion)` to your `~/.bashrc` or `~/.zshrc` to enable tab completion.
+
 ## Built-in commands:
 
     gr tag ..
@@ -149,7 +185,8 @@ Tags can also be specified more explicitly; this is useful if you are using a sc
 
     gr list        List all known repositories and their tags
 
-    gr status      Displays the (git) status of the selected directories.
+    gr status       Displays the (git) status of the selected directories.
+    gr status -v    Runs "git status -sb" for a more verbose status.
 
     gr config ..
       get <k>       Get a config key (can also be a path, e.g. "tags.foo")
@@ -165,13 +202,13 @@ Tags can also be specified more explicitly; this is useful if you are using a sc
 
 Plugins are functions which are invoked once for each repository path specified by the user. This makes it easier to write plugins, since they do not need to handle executing against multiple repository paths explicitly.
 
-If you write a plugin, make sure to tag it (in `package.json`) with `gr`. This makes it easy to find plugins by [searching npm by tag](#TODO). Also, file a PR against this readme if you want to have your plugin listed here.
+If you write a plugin, make sure to add the `gr` keyword to (in [package.json](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching npm by tag](https://npmjs.org/browse/keyword/gr). Also, file a PR against this readme if you want to have your plugin listed here.
 
 Here are the plugins that are currently available:
 
 - [bootstrap](#TODO): bootstraps a set of repositories from a config file.
 
-Here is a list of plugin ideas:
+Here are some plugin ideas:
 
 - extend auto-discovery beyond git
 - run tests
@@ -188,7 +225,6 @@ Here is a list of plugin ideas:
 - xargs -compatibility
 - Ability to confirm each command (to make it possible to skip)
 - Ability expose other statuses, e.g. npm outdated
-
 
 Plugins are treated a bit like a REST API: they are defined as "routes" on the `gr` object.
 

@@ -17,6 +17,11 @@ function version(req) {
   req.exit();
 }
 
+function help(req) {
+  console.log(fs.readFileSync(__dirname + '/usage.txt').toString());
+  req.exit();
+}
+
 // middleware: git
 /*
 gr.use(function(req, res, next) {
@@ -27,14 +32,14 @@ gr.use(function(req, res, next) {
 
 // plugins
 
-gr.use('help', function(req) {
-  console.log(fs.readFileSync(__dirname + '/usage.txt').toString());
-  req.exit();
-});
+gr.use('help', help);
+gr.use('--help', help);
 
 gr.use('-v', version);
 gr.use('--version', version);
 gr.use('version', version);
+
+gr.use('completion', require('../plugins/completion.js'));
 
 // bootstrap plugin ...
 
@@ -67,6 +72,7 @@ gr.use(['tag', 'discover'], tag.discover);
 gr.use(['tag'], tag.list);
 
 // default: run the remainder as a shell task
+gr.use('--', require('../plugins/run.js'));
 gr.use(require('../plugins/run.js'));
 
 // preprocessing: expand +#tag / -#tag

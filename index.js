@@ -2,7 +2,6 @@ var fs = require('fs'),
     path = require('path'),
     style = require('./lib/style.js'),
     Config = require('./lib/config.js'),
-    parse = require('./lib/argparse.js'),
     log = require('minilog')('gr');
 
 var filterRegex = require('./lib/list-tasks/filter-regex.js');
@@ -63,6 +62,9 @@ Gr.prototype.preprocess = function(argv) {
         if(argv[index].length > 2) {
           isExpandable = true;
           index++;
+        } else {
+          isExpandable = false;
+          index++;
         }
         break;
     }
@@ -117,6 +119,9 @@ Gr.prototype.parseTargets = function(argv) {
           this.format = 'json';
           isTarget = true;
           processed++;
+        } else if (argv[0] == '--') {
+          isTarget = false;
+          processed++;
         }
         break;
     }
@@ -142,7 +147,7 @@ Gr.prototype.use = function(route, fn) {
   if (typeof route === 'function') {
     this.stack.push({ route: '', handle: route });
   } else {
-    this.stack.push({ route: route, handle: fn });
+    this.stack.push({ route: (Array.isArray(route) ? route : [ route ] ), handle: fn });
   }
 };
 
@@ -200,7 +205,7 @@ Gr.prototype.handle = function(path, argv, done, exit) {
     isMatch = (layer.route === '');
     // skip this layer if the route doesn't match.
     if(!isMatch) {
-      parts = (Array.isArray(layer.route) ? layer.route : [ layer.route ] );
+      parts = layer.route;
       isMatch = parts.every(function(part, i) {
         return argv[i] == part;
       });

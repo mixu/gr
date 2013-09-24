@@ -3,48 +3,54 @@ var fs = require('fs'),
     log = require('minilog')('gr-tag'),
     style = require('../lib/style.js');
 
+function _getTargets(argv) {
+  var targets = [ process.cwd() ];
+  if(argv.length > 1) {
+    // tag add foo ~/path
+    targets = argv
+      .slice(1)
+      .map(function(item) {
+        var target = path.resolve(process.cwd(), item);
+        if(!fs.existsSync(target)) {
+          console.log('Path not found', target);
+        }
+        return target;
+      });
+  }
+  return targets;
+}
+
+
 function add(req, res, next) {
   var key = 'tags.'+req.argv[0],
-      targetPath = process.cwd(),
-      tmp;
+      targets = _getTargets(req.argv);
 
-  if(req.argv.length > 1) {
-    // tag add foo ~/path
-    targetPath = tmp = path.resolve(process.cwd(), req.argv[1]);
-    if(!fs.existsSync(tmp)) {
-      console.log('Path not found', tmp);
+  targets.forEach(function(target) {
+    req.config.add(key, target);
+    if(req.format == 'human') {
+      log.info('add', key, target, '=>', req.config.get(key));
+    } else {
+      console.log(JSON.stringify({ op: 'add', tag: req.argv[0], path: target }));
     }
-  }
+  });
 
-  req.config.add(key, targetPath);
-  log.info('add', key, targetPath, '=>', req.config.get(key));
   req.config.save();
   req.exit();
 }
 
 function remove(req, res, next) {
   var key = 'tags.'+req.argv[0],
-      targetPath = process.cwd(),
-      tmp;
+      targets = _getTargets(req.argv);
 
-  if(req.argv.length > 1) {
-    // tag add foo ~/path
-    targetPath = tmp = path.resolve(process.cwd(), req.argv[1]);
-    if(!fs.existsSync(tmp)) {
-      console.log('Path not found', tmp);
+  targets.forEach(function(target) {
+    req.config.remove(key, target);
+
+    if(req.format == 'human') {
+      log.info('remove', key, target, '=>', req.config.get(key));
+    } else {
+      console.log(JSON.stringify({ op: 'rm', tag: req.argv[0], path: target }));
     }
-  }
-
-  req.config.remove(key, targetPath);
-
-  switch(req.format) {
-    case 'json':
-      console.log(JSON.stringify({ op: 'rm', tag: req.argv[0], path: targetPath}));
-      break;
-    case 'human':
-    default:
-      log.info('remove', key, targetPath, '=>', req.config.get(key));
-  }
+  });
 
   req.config.save();
   req.exit();
@@ -101,8 +107,9 @@ var spawn = require('child_process').spawn,
     findBySubdir = require('../lib/find-by-subdir.js');
 
 function discover(req, res, next) {
-  var pathMaxLen = Object.keys(req.config.items.repos).reduce(function(prev, current) {
-        return Math.max(prev, current.replace(req.gr.homePath, '~').length);
+  var repos = (req.gr.directories ? req.gr.directories : []),
+      pathMaxLen = repos.reduce(function(prev, current) {
+        return Math.max(prev, current.replace(req.gr.homePath, '~').length + 2);
       }, 0);
 
   function pad(s, len) {
@@ -139,7 +146,7 @@ function discover(req, res, next) {
 
   var task = spawn(editor, [ tmpfile ], {
     env: process.env,
-    stdout: 'inherit'
+    stdio: 'inherit'
   });
 
   function indata(c) {
@@ -151,10 +158,6 @@ function discover(req, res, next) {
 
   task.on('exit', function(code) {
     // cleanup
-    process.stdin.setRawMode(false);
-    process.stdin.pause();
-    process.stdin.removeListener('data', indata);
-    task.stdout.removeListener('data', outdata);
     if(code != 0) {
       console.log('');
       console.log('spawn-task: "' +line+ '" exited with nonzero exit code: '+ code);
@@ -172,11 +175,6 @@ function discover(req, res, next) {
     req.exit();
     return;
   });
-
-  process.stdin.resume();
-  process.stdin.on('data', indata);
-  task.stdout.on('data', outdata);
-  process.stdin.setRawMode(true);
 }
 
 function applyTags(req, lines) {

@@ -39,11 +39,13 @@ Gr.prototype.preprocess = function(argv) {
     }
     first = argv[index].substr(0, 2);
     switch(first) {
+      case '+@':
       case '+#':
         argv.splice(index, 1, 'tag', 'add', argv[index].substr(2));
         isExpandable = true;
         index++;
         break;
+      case '-@':
       case '-#':
         argv.splice(index, 1, 'tag', 'rm', argv[index].substr(2));
         isExpandable = true;
@@ -85,6 +87,7 @@ Gr.prototype.parseTargets = function(argv) {
     }
     first = argv[0].charAt(0);
     switch(first) {
+      case '@':
       case '#':
         // #tags
         var key = 'tags.'+argv[0].substr(1),

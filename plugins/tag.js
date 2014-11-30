@@ -39,7 +39,7 @@ function add(req, res, next) {
 }
 
 function remove(req, res, next) {
-  var key = 'tags.'+req.argv[0],
+  var key = 'tags.' + req.argv[0],
       targets = _getTargets(req.argv);
 
   targets.forEach(function(target) {
@@ -128,7 +128,8 @@ function discover(req, res, next) {
     var tags, humanDir;
     // 1) normalize by taking dirname, changing homePath to ~/ and sorting
     dir = path.dirname(dir);
-    humanDir = dir.replace(new RegExp('^'+req.gr.homePath+'/'), '~/');
+    humanDir = dir.replace(new RegExp('^'+req.gr.homePath+'/'), '~/')
+                  .replace(/ /g, '\\ ');
     // 2) search for matching tags
     tags = req.gr.getTagsByPath(dir);
 
@@ -177,6 +178,30 @@ function discover(req, res, next) {
   });
 }
 
+// ignores escaped spaces e.g. '\ '
+function splitBySpace(line) {
+  var parts = [],
+      start = 0,
+      end = 0;
+  while(end < line.length) {
+    if (line.charAt(end) === '\\') {
+      end += 2;
+    } else if (line.charAt(end) === ' ') {
+      parts.push(line.slice(start, end));
+      // skip any extra spaces
+      while (line.charAt(end + 1) === ' ') {
+        end++;
+      }
+      start = end + 1;
+    }
+    end++;
+  }
+  if (start != end) {
+    parts.push(line.slice(start, end));
+  }
+  return parts;
+}
+
 function applyTags(req, lines) {
   // filter out commented lines
   lines = lines.filter(function(line) {
@@ -184,7 +209,7 @@ function applyTags(req, lines) {
           });
   lines.forEach(function(line) {
     // split by whitespace
-    var parts = line.split(/\s+/),
+    var parts = splitBySpace(line),
         // first part is an existing path
         dirname = parts[0].replace('~', req.gr.homePath),
         // subsequent parts are tags

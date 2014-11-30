@@ -85,7 +85,7 @@ To add tab completion:
 
 - open your `~/.zshrc` or `~/.bashrc` (`~/.bash_profile` on OSX)
 - add the line `. <(gr completion)` at the end of the file
-- then, to apply this change to your current session, run `source ~/.zshrc` (or `~/.bashrc`)
+- then, to apply this change to your current session, run `source ~/.zshrc` (or `source ~/.bashrc` or `source ~/bash_profile`)
 
 Now, when you type `gr <tab>`, you'll see the list tags you've created. If you notice any bugs, let me know via an issue.
 

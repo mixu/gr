@@ -1,33 +1,36 @@
 ## Features
 
-- Hashtag all the things! `gr #work foo` will run the command `foo` in all the paths tagged `#work`.
+- Tag all the things! `gr @work foo` will run the command `foo` in all the paths tagged `@work`.
 - Auto-discovery of git repositories for easy setup and tag management.
 - `gr` does not reinvent any git operations: instead, it passes through and runs any unknown commands. All your git-fu will still work! e.g. `gr #work git fetch` is the same as running `git fetch` in each all the paths tagged `#work`.
 - Built-in commands for common pain points:
   - `status` for one-line summaries of repos (modified, behind/ahead, tags)
-  - `bootstrap` for fetching repos
 - Extensible via plugins and middleware: REST API/[Connect](http://senchalabs.github.com/connect)-style request handlers (`function(req, res, next) { ... }`
 
 -----
+
+## Changelog
+
+- `0.3.0`: Switched from `#foo` to `@foo` for tags; while the `#foo` syntax looks cool, most shells will treat it as a comment unless the tag is surrounded by quotes. Looking back at the design, I'd rather go for usability over pretty looking commands. Updated the documentation to match this change.
 
 ## Example
 
 `gr` works by tagging directories with tags:
 
-    gr +#work ~/mnt/gluejs ~/mnt/microee
+    gr +@work ~/mnt/gluejs ~/mnt/microee
 
-After this, you can run any commands on the tagged directories simply by prefixing them with `gr #work`. For example:
+After this, you can run any commands on the tagged directories simply by prefixing them with `gr @work`. For example:
 
-    gr #work status
+    gr @work status
 
 Outputs (actual output is colorized):
 
-    ~/mnt/gluejs           2 modified [ahead 2]      #work
-    ~/mnt/microee          Clean                     #work
+    ~/mnt/gluejs           2 modified [ahead 2]      @work
+    ~/mnt/microee          Clean                     @work
 
 E.g. path, modified, ahead/behind remote, tags. Alternatively, you can use plain git commands for a more verbose report:
 
-    gr #work git status -sb
+    gr @work git status -sb
 
 Outputs:
 
@@ -45,9 +48,13 @@ Outputs:
 
 ## Getting started
 
-To install gr (the name was already taken on npm):
+First, [install node.js](http://nodejs.org/download/), which comes with the npm command. 
+
+Next, to install gr (the name was already taken on npm):
 
     npm install -g git-run
+
+You may need to prefix this with `sudo`. 
 
 Use the auto-discovery feature to set up tags quickly:
 
@@ -57,18 +64,18 @@ Auto-discovery searches all paths under your home path; generates a list and ope
 
     # Found the following directories with `.git` directories.
     #
-    # Please add any tags you want by adding one or more `#tag`
+    # Please add any tags you want by adding one or more `@tag`
     # entries after the path name.
     # For example:
-    #   ~/foo #work #play
-    # will tag ~/foo with #work and #play.
+    #   ~/foo @work @play
+    # will tag ~/foo with @work and @play.
     #
     ~/foo
     ~/bar/baz
 
 Add tags after each path, save the file and exit. Now, your tags are set up.
 
-Run `gr status` or `gr tag list` to verify; and try `gr #work status` or `gr #work ls -lah` to see how commands are executed. `status` is a built-in command; `ls -lah` is not so it is run in each of the paths.
+Run `gr status` or `gr tag list` to verify; and try `gr @work status` or `gr @work ls -lah` to see how commands are executed. `status` is a built-in command; `ls -lah` is not so it is run in each of the paths.
 
 You can run auto-discovery multiple times; it makes making bulk changes to tags quite easy.
 
@@ -82,27 +89,27 @@ Some examples:
 
 ### To update all my work repos
 
-`gr #work git fetch` and then `gr #work status`. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
+`gr @work git fetch` and then `gr @work status`. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
 
 ### To see diffs
 
-`gr #work git diff` or `gr #work git diff --cached`.
+`gr @work git diff` or `gr @work git diff --cached`.
 
 ### To run jshint
 
-`gr #work jshint . --exclude=**/node_modules`
+`gr @work jshint . --exclude=**/node_modules`
 
 ### To rebuild all my writing via make
 
-`gr #write make`
+`gr @write make`
 
 ### To list the npm modules installed
 
-`gr #work npm ls`
+`gr @work npm ls`
 
 ### To print a graph-like log
 
-`gr #work git --no-pager log --decorate --graph --oneline -n 3`
+`gr @work git --no-pager log --decorate --graph --oneline -n 3`
 
 Of course, I don't actually type these out. Instead, I am using `zsh` aliases. `grd` is for diff, `grdc` is for diff --cached; `grl` is for the log. For example, in `.zshrc`:
 
@@ -126,7 +133,7 @@ Currently, there is just one option: `--json`, which switched to a machine-reada
 The targets can be paths or tags. For example:
 
     gr ~/foo ~/bar status
-    gr #work ls -lah
+    gr @work ls -lah
 
 Path targets should be directories. Tags refer to sets of directories. They managed using the `tag` built-in.
 
@@ -138,40 +145,40 @@ If no targets are given, then all tagged paths are used. For example, `gr status
 
 Short form:
 
-    #tag            List directories associated with "tag"
-    #tag <cmd>      Run a command in the directories associated with "tag"
+    @tag            List directories associated with "tag"
+    @tag <cmd>      Run a command in the directories associated with "tag"
     -t <tag> <cmd>  Run a command in the directories associated with "tag"
-    +#tag           Add a tag to the current directory
-    -#tag           Remove a tag from the current directory
-    +#tag <path>    Add a tag to <path>
-    -#tag <path>    Remove a tag from <path>
+    +@tag           Add a tag to the current directory
+    -@tag           Remove a tag from the current directory
+    +@tag <path>    Add a tag to <path>
+    -@tag <path>    Remove a tag from <path>
 
 Long form:
 
-    tag add <tag>   Alternative to +#tag
-    tag rm <tag>    Alternative to -#tag
-    tag add <t> <p> Alternative to +#tag <path>
-    tag rm <t> <p>  Alternative to -#tag <path>
+    tag add <tag>   Alternative to +@tag
+    tag rm <tag>    Alternative to -@tag
+    tag add <t> <p> Alternative to +@tag <path>
+    tag rm <t> <p>  Alternative to -@tag <path>
     tag list        List all tags (default action)
     tag discover    Auto-discover git paths under ~/
 
 For example:
 
-    gr +#work ~/bar
+    gr +@work ~/bar
 
 ## Commands
 
 The command can be either one of the built-in commands, or a shell command. For example:
 
-    gr #work status
+    gr @work status
     gr ~/foo ~/bar ls -lah
 
 To explicitly set the command, use `--`:
 
     gr ~/foo -- ~/bar.sh
-    gr #work -- git remote -v
+    gr @work -- git remote -v
 
-Tags can also be specified more explicitly; this is useful if you are using a scripting language which uses # for comments. For example `gr -t work -t play` is the same as `gr #work #play`.
+Tags can also be specified more explicitly. For example `gr -t work -t play` is the same as `gr @work @play`.
 
 ## Built-in commands:
 
@@ -200,9 +207,7 @@ Tags can also be specified more explicitly; this is useful if you are using a sc
 
 ## Plugins
 
-Plugins add further
-
-Here are the plugins that are currently available:
+TODO: 
 
 - [bootstrap](#TODO): bootstraps a set of repositories from a config file.
 
@@ -304,7 +309,7 @@ This is just a random idea - using "meta-tags" to target commands based on `git 
 - unmerged: Has files that have not been merged
 - unclean: Does not have a clean working directory.
 
-For example: `gr #clean git fetch`
+For example: `gr @clean git fetch`
 
 ## Inspired by
 

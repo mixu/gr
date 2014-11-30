@@ -65,7 +65,7 @@ function list(req, res, next) {
     if(req.format == 'human') {
       console.log(
         style('Paths tagged ', 'gray') +
-        style('#'+req.argv[0], 'white') +
+        style('@'+req.argv[0], 'white') +
         ': ' + obj.join(', ')
       );
     } else {
@@ -78,7 +78,7 @@ function list(req, res, next) {
         var val = obj[tag];
           console.log(
             style('Paths tagged ', 'gray') +
-            style('#'+tag, 'white') +
+            style('@'+tag, 'white') +
             ': ' + (Array.isArray(val) ? val.map(function(s) {
               return s.replace(req.gr.homePath, '~');
             }).join(', ') : val)
@@ -135,7 +135,7 @@ function discover(req, res, next) {
     // 3) append to the template
     append += humanDir +
               pad(humanDir, pathMaxLen) +
-              tags.map(function(s) { return '#' + s; }).join(' ') + '\n';
+              tags.map(function(s) { return '@' + s; }).join(' ') + '\n';
   });
 
   // now, write the file
@@ -189,8 +189,8 @@ function applyTags(req, lines) {
         dirname = parts[0].replace('~', req.gr.homePath),
         // subsequent parts are tags
         tags = parts.slice(1).map(function(s) {
-          // # is optional
-          return s.replace(/^#/, '');
+          // # | @ is optional
+          return s.replace(/^#/, '').replace(/^@/, '');
         }),
         confTags = (req && req.config && req.config.items &&
                     req.config.items.tags ? req.config.items.tags : []);

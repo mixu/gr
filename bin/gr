@@ -72,7 +72,7 @@ gr.use(['tag'], tag.list);
 gr.use('--', require('../plugins/run.js'));
 gr.use(require('../plugins/run.js'));
 
-// preprocessing: expand +#tag / -#tag
+// preprocessing: expand +@tag / -@tag
 var argv = gr.preprocess(process.argv.slice(2));
 // process.stderr.write(JSON.stringify(argv));
 
@@ -80,7 +80,7 @@ var argv = gr.preprocess(process.argv.slice(2));
 argv = gr.parseTargets(argv);
 // process.stderr.write(JSON.stringify(argv));
 
-// #foo #bar => will just output
+// @foo @bar => will just output
 if(argv.length == 0) {
   if(gr.format == 'json') {
     console.log(JSON.stringify(gr.directories, null, 2));

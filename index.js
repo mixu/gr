@@ -52,9 +52,9 @@ Gr.prototype.preprocess = function(argv) {
         index++;
         break;
       case '-t':
-        // replace -t foo with #foo
+        // replace -t foo with @foo
         if(argv[index].length == 2) {
-          argv.splice(index, 2, '#' + argv[index+1]);
+          argv.splice(index, 2, '@' + argv[index+1]);
           isExpandable = true;
           index += 2;
         }
@@ -89,7 +89,7 @@ Gr.prototype.parseTargets = function(argv) {
     switch(first) {
       case '@':
       case '#':
-        // #tags
+        // @tags
         var key = 'tags.'+argv[0].substr(1),
             value = this.config.get(key);
 

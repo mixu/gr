@@ -11,7 +11,7 @@ module.exports = function(req, res, next) {
   }
 
   hashtags = tags.map(function(s) {
-    return '#'+s;
+    return '@'+s;
   });
 
   // actions on tags
@@ -40,6 +40,7 @@ module.exports = function(req, res, next) {
         case '-t':
           tabtab.log(tags, data);
           break;
+        case '@':
         case '#':
           tabtab.log(tags, data);
           break;
@@ -54,9 +55,9 @@ module.exports = function(req, res, next) {
           break;
         case 'gr':
         default:
-          if(data.lastPartial && data.lastPartial.charAt(0) == '#') {
+          if(data.lastPartial && (data.lastPartial.charAt(0) == '#' || data.lastPartial.charAt(0) == '@')) {
             tabtab.log(hashtags, data);
-          } else if(data.prev && data.prev.charAt(0) == '#') {
+          } else if(data.prev && (data.prev.charAt(0) == '#' || data.prev.charAt(0) == '@') ) {
             tabtab.log(actions, data);
           } else {
 

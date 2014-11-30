@@ -53,7 +53,7 @@ module.exports = function(req, res, next) {
             style(path.basename(cwd), 'white') + pad(dirname + path.basename(cwd), pathMaxLen) +' ' +
             style(modified, (lines.length > 0 ? 'red' : 'green')) + pad(modified, 14) +
             behind + pad(behind, 14) +
-            tags.map(function(s) { return '#' + s; }).join(' ')
+            tags.map(function(s) { return '@' + s; }).join(' ')
           );
           if (err !== null) {
             console.log('exec error: ' + err);

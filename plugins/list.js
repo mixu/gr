@@ -7,7 +7,7 @@ module.exports = function(req, res, next) {
   req.gr.addAll();
   req.gr.dirUnique();
   req.gr.directories.forEach(function(dir) {
-    var cwd = dir.replace(new RegExp('^'+req.gr.homePath+'/'), '~/');
+    var cwd = dir.replace(new RegExp('^' + req.gr.homePath + '/'), '~/');
     console.log(style(path.dirname(cwd) + path.sep, 'gray') + style(path.basename(cwd), 'white'));
   });
 

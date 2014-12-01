@@ -9,12 +9,12 @@ var binpath = path.normalize(__dirname + '/../bin/gr'),
     fixturepath;
 
 function run(args, cwd, onDone) {
-  exec(binpath +' ' + args, {
+  exec(binpath + ' ' + args, {
         cwd: cwd,
-        maxBuffer: 1024*1024 // 1Mb
-      }, function (err, stdout, stderr) {
+        maxBuffer: 1024 * 1024 // 1Mb
+      }, function(err, stdout, stderr) {
         var json;
-        if(stderr) {
+        if (stderr) {
           console.log('stderr: ' + stderr);
         }
         if (err !== null) {
@@ -22,7 +22,7 @@ function run(args, cwd, onDone) {
         }
         try {
           json = JSON.parse(stdout);
-        } catch(e) {
+        } catch (e) {
           // console.error('Cannot parse', stdout);
           return onDone(stdout);
         }
@@ -32,13 +32,13 @@ function run(args, cwd, onDone) {
 
 var backup,
     homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
-    confFile = homePath+'/.grconfig.json';
+    confFile = homePath + '/.grconfig.json';
 
 describe('gr integration tests', function() {
 
   before(function() {
     // backup
-    if(fs.existsSync(confFile)) {
+    if (fs.existsSync(confFile)) {
       backup = fs.readFileSync(confFile);
     }
 
@@ -52,7 +52,7 @@ describe('gr integration tests', function() {
 
   after(function() {
     // restore
-    if(backup) {
+    if (backup) {
       fs.writeFileSync(confFile, backup);
     }
   });
@@ -63,15 +63,15 @@ describe('gr integration tests', function() {
     beforeEach(function(done) {
       // add a new random tag
       this.pristineTag = Math.random().toString(36).substring(2);
-      run('--json +#'+this.pristineTag, fixturepath+'/a', function(result) {
+      run('--json +#' + this.pristineTag, fixturepath + '/a', function(result) {
         done();
       });
     });
 
     it('#tag - List directories associated with "tag"', function(done) {
-      var p = fixturepath+'/a';
+      var p = fixturepath + '/a';
       // #foo
-      run('--json -t '+this.pristineTag, p, function(result) {
+      run('--json -t ' + this.pristineTag, p, function(result) {
         assert.ok(Array.isArray(result));
         assert.ok(result.some(function(v) {
           return v == p;
@@ -83,7 +83,7 @@ describe('gr integration tests', function() {
     // #tag <cmd>      Run a command in the directories associated with "tag"
     it('-t <tag> <cmd> - Run a command in the directories associated with "tag"', function(done) {
       // #foo ls -lah
-      run('-t '+this.pristineTag+' ls -lah', fixturepath+'/a', function(result) {
+      run('-t ' + this.pristineTag + ' ls -lah', fixturepath + '/a', function(result) {
         // check that one of the lines contains "a.txt"
         assert.ok(/a\.txt/.test(result));
         done();
@@ -92,7 +92,7 @@ describe('gr integration tests', function() {
 
     it('can mix tags and paths for command execution', function(done) {
       // gr -t bar ./fixtures/b cmd
-      run('-t '+this.pristineTag+' ' + fixturepath+'/b'+' ls -lah', fixturepath+'/a', function(result) {
+      run('-t ' + this.pristineTag + ' ' + fixturepath + '/b' + ' ls -lah', fixturepath + '/a', function(result) {
         // check that one of the lines contains "a.txt" (via the tag)
         assert.ok(/a\.txt/.test(result));
         // check that one of the lines contains "b.txt" (via the path)
@@ -102,7 +102,7 @@ describe('gr integration tests', function() {
     });
 
     it('tag list - List all tags (default action)', function(done) {
-      var p = fixturepath+'/a',
+      var p = fixturepath + '/a',
           pristineTag = this.pristineTag;
       run('--json tag list', p, function(result) {
         assert.ok(typeof result == 'object');
@@ -115,7 +115,7 @@ describe('gr integration tests', function() {
     });
 
     it('-#tag - Remove a tag from the current directory (cwd)', function(done) {
-      var p = fixturepath+'/a',
+      var p = fixturepath + '/a',
           tag = this.pristineTag;
       // -#foo
       // tag rm foo
@@ -153,7 +153,7 @@ describe('gr integration tests', function() {
   xdescribe('if no target is given, then all tagged paths are used', function() {});
 
   it('+#tag - Add a tag to the current directory (cwd)', function(done) {
-    var p = fixturepath+'/a',
+    var p = fixturepath + '/a',
         tag = Math.random().toString(36).substring(2);
     run('--json +#' + tag, p, function(result) {
       // get the answer
@@ -195,8 +195,8 @@ describe('gr integration tests', function() {
 
     it('+#tag <p1> <p2> ...    Add a tag to <path>', function(done) {
       var self = this,
-          p = fixturepath+'/a';
-      run('--json +#' + this.pristineTag + ' '+ this.dirs.join(' '), p, function(result) {
+          p = fixturepath + '/a';
+      run('--json +#' + this.pristineTag + ' ' + this.dirs.join(' '), p, function(result) {
         // get the answer
         run('--json tag ls ' + self.pristineTag, p, function(result) {
 
@@ -212,8 +212,8 @@ describe('gr integration tests', function() {
 
     it('tag add <t> <p1> <p2> ... Alternative to +#tag <path>', function(done) {
       var self = this,
-          p = fixturepath+'/a';
-      run('--json tag add ' + this.pristineTag + ' '+ this.dirs.join(' '), p, function(result) {
+          p = fixturepath + '/a';
+      run('--json tag add ' + this.pristineTag + ' ' + this.dirs.join(' '), p, function(result) {
         // get the answer
         run('--json tag ls ' + self.pristineTag, p, function(result) {
           assert.ok(Array.isArray(result));
@@ -244,8 +244,8 @@ describe('gr integration tests', function() {
 
     it('set <k> <v>   Set a config key (overwrites existing value)', function(done) {
       var key = this.key, value = this.value;
-      run('--json config set ' + key + ' ' + value, fixturepath+'/a', function(result) {
-        run('--json config get ' + key, fixturepath+'/a', function(result) {
+      run('--json config set ' + key + ' ' + value, fixturepath + '/a', function(result) {
+        run('--json config get ' + key, fixturepath + '/a', function(result) {
           assert.equal(result, value);
           done();
         });
@@ -254,8 +254,8 @@ describe('gr integration tests', function() {
 
     it('add <k> <v>   Add a value to a config key (appends rather than overwriting)', function(done) {
       var key = this.key, value = this.value;
-      run('--json config add ' + key + ' ' + value, fixturepath+'/a', function(result) {
-        run('--json config get ' + key, fixturepath+'/a', function(result) {
+      run('--json config add ' + key + ' ' + value, fixturepath + '/a', function(result) {
+        run('--json config get ' + key, fixturepath + '/a', function(result) {
           assert.ok(Array.isArray(result));
           assert.ok(result.some(function(v) { return v == value; }));
           done();
@@ -266,12 +266,12 @@ describe('gr integration tests', function() {
     it('rm <k> <v>    Remove a value from a config key (if it exists)', function(done) {
       this.timeout(4000);
       var key = this.key, value = this.value, value2 = this.value + 'aa';
-      run('--json config add ' + key + ' ' + value, fixturepath+'/a', function(result) {
-        assert.deepEqual(result, { op: 'add', key: key, value: value, result: [ value ] });
-        run('--json config add ' + key + ' ' + value2, fixturepath+'/a', function(result) {
-          run('--json config rm ' + key + ' ' + value, fixturepath+'/a', function(result) {
-          assert.deepEqual(result, { op: 'rm', key: key, value: value, result: [ value2 ] });
-            run('--json config get ' + key, fixturepath+'/a', function(result) {
+      run('--json config add ' + key + ' ' + value, fixturepath + '/a', function(result) {
+        assert.deepEqual(result, { op: 'add', key: key, value: value, result: [value] });
+        run('--json config add ' + key + ' ' + value2, fixturepath + '/a', function(result) {
+          run('--json config rm ' + key + ' ' + value, fixturepath + '/a', function(result) {
+          assert.deepEqual(result, { op: 'rm', key: key, value: value, result: [value2] });
+            run('--json config get ' + key, fixturepath + '/a', function(result) {
               assert.ok(Array.isArray(result));
               assert.ok(!result.some(function(v) { return v == value; }));
               done();
@@ -283,8 +283,8 @@ describe('gr integration tests', function() {
 
     it('list - List all configuration (default action)', function(done) {
       var key = this.key, value = this.value;
-      run('--json config set ' + key + ' ' + value, fixturepath+'/a', function(result) {
-        run('--json config list', fixturepath+'/a', function(result) {
+      run('--json config set ' + key + ' ' + value, fixturepath + '/a', function(result) {
+        run('--json config list', fixturepath + '/a', function(result) {
           var parts = key.split('.');
           assert.equal(typeof result, 'object');
           assert.equal(result.test[parts[1]], value);

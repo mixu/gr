@@ -31,5 +31,9 @@
   },
   "devDependencies": {
     "file-fixture": "0.0.2"
+  },
+  "jshintConfig": {
+    "-W018": true,
+    "-W069": true
   }
 }

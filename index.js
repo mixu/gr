@@ -8,7 +8,7 @@ var filterRegex = require('./lib/list-tasks/filter-regex.js');
 
 function Gr() {
   this.homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-  this.config = new Config(this.homePath+'/.grconfig.json');
+  this.config = new Config(this.homePath + '/.grconfig.json');
   this.stack = [];
   this.format = 'human';
   this.directories = [];
@@ -34,11 +34,11 @@ Gr.prototype.preprocess = function(argv) {
       first;
   do {
     isExpandable = false;
-    if(!argv[index]) {
+    if (!argv[index]) {
       break;
     }
     first = argv[index].substr(0, 2);
-    switch(first) {
+    switch (first) {
       case '+@':
       case '+#':
         argv.splice(index, 1, 'tag', 'add', argv[index].substr(2));
@@ -53,15 +53,15 @@ Gr.prototype.preprocess = function(argv) {
         break;
       case '-t':
         // replace -t foo with @foo
-        if(argv[index].length == 2) {
-          argv.splice(index, 2, '@' + argv[index+1]);
+        if (argv[index].length == 2) {
+          argv.splice(index, 2, '@' + argv[index + 1]);
           isExpandable = true;
           index += 2;
         }
         break;
       case '--':
         // ignore strings starting with -- but not --
-        if(argv[index].length > 2) {
+        if (argv[index].length > 2) {
           isExpandable = true;
           index++;
         } else {
@@ -70,7 +70,7 @@ Gr.prototype.preprocess = function(argv) {
         }
         break;
     }
-  } while(isExpandable && index < argv.length);
+  } while (isExpandable && index < argv.length);
   return argv;
 };
 
@@ -80,25 +80,28 @@ Gr.prototype.parseTargets = function(argv) {
       processed = 0,
       targetPath,
       first;
+
+  function pushDir(path) {
+    self.directories.push(path);
+  }
+
   do {
     isTarget = false;
-    if(!argv[0]) {
+    if (!argv[0]) {
       break;
     }
     first = argv[0].charAt(0);
-    switch(first) {
+    switch (first) {
       case '@':
       case '#':
         // @tags
-        var key = 'tags.'+argv[0].substr(1),
+        var key = 'tags.' + argv[0].substr(1),
             value = this.config.get(key);
 
-        if(typeof value !== 'undefined') {
-          (Array.isArray(value) ? value : [ value]).forEach(function(path) {
-            self.directories.push(path);
-          });
-        } else if(this.format == 'human') {
-          log.error('Tag '+argv[0]+' is not associated with any paths.');
+        if (typeof value !== 'undefined') {
+          (Array.isArray(value) ? value : [value]).forEach(pushDir);
+        } else if (this.format == 'human') {
+          log.error('Tag ' + argv[0] + ' is not associated with any paths.');
         }
         processed++;
         isTarget = true;
@@ -109,7 +112,7 @@ Gr.prototype.parseTargets = function(argv) {
       case '.':
         // paths
         targetPath = path.resolve(process.cwd(), argv[0]);
-        if(fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
+        if (fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
           this.directories.push(targetPath);
           processed++;
           isTarget = true;
@@ -117,7 +120,7 @@ Gr.prototype.parseTargets = function(argv) {
         }
         break;
       default:
-        if(argv[0] == '--json') {
+        if (argv[0] == '--json') {
           argv.shift();
           this.format = 'json';
           isTarget = true;
@@ -128,9 +131,9 @@ Gr.prototype.parseTargets = function(argv) {
         }
         break;
     }
-  } while(isTarget && argv.length > 0);
+  } while (isTarget && argv.length > 0);
 
-  if(processed == 0) {
+  if (processed === 0) {
     // default to using all paths
     this.addAll();
   }
@@ -150,7 +153,7 @@ Gr.prototype.use = function(route, fn) {
   if (typeof route === 'function') {
     this.stack.push({ route: '', handle: route });
   } else {
-    this.stack.push({ route: (Array.isArray(route) ? route : [ route ] ), handle: fn });
+    this.stack.push({ route: (Array.isArray(route) ? route : [route]), handle: fn });
   }
 };
 
@@ -160,7 +163,7 @@ Gr.prototype.exec = function(argv, exit) {
       tasks = [];
 
   // if no paths, just push one task
-  if(this.directories.length == 0) {
+  if (this.directories.length === 0) {
     tasks.push(function(onDone) {
       self.handle('', argv, onDone, exit);
     });
@@ -173,12 +176,12 @@ Gr.prototype.exec = function(argv, exit) {
   }
 
   function series(task) {
-    if(task) {
+    if (task) {
       task(function(result) {
         return series(tasks.shift());
       });
     } else {
-      if(typeof exit === 'function') {
+      if (typeof exit === 'function') {
         exit();
       }
     }
@@ -200,19 +203,19 @@ Gr.prototype.handle = function(path, argv, done, exit) {
     if (!layer) {
       log.info('No command matched:', argv);
       // if the list is empty, warn
-      if(self.directories.length == 0 && self.format == 'human') {
+      if (self.directories.length === 0 && self.format == 'human') {
         log.warn('No target paths matched. Perhaps no paths are associated with the tag you used?');
       }
       return;
     }
     isMatch = (layer.route === '');
     // skip this layer if the route doesn't match.
-    if(!isMatch) {
+    if (!isMatch) {
       parts = layer.route;
       isMatch = parts.every(function(part, i) {
         return argv[i] == part;
       });
-      rest = argv.slice(layer.route.length ? layer.route.length : 1 );
+      rest = argv.slice(layer.route.length ? layer.route.length : 1);
     } else {
       rest = argv;
     }
@@ -243,11 +246,11 @@ Gr.prototype.handle = function(path, argv, done, exit) {
 Gr.prototype.getTagsByPath = function(cwd) {
   var self = this,
       tags = [];
-  if(!cwd || !this.config || !this.config.items || !this.config.items.tags) {
+  if (!cwd || !this.config || !this.config.items || !this.config.items.tags) {
     return tags;
   }
-  Object.keys(this.config.items.tags).forEach(function(tag){
-    if(Array.isArray(self.config.items.tags[tag]) &&
+  Object.keys(this.config.items.tags).forEach(function(tag) {
+    if (Array.isArray(self.config.items.tags[tag]) &&
        self.config.items.tags[tag].indexOf(cwd) > -1) {
       tags.push(tag);
     }
@@ -257,9 +260,9 @@ Gr.prototype.getTagsByPath = function(cwd) {
 
 Gr.prototype.addAll = function() {
   var self = this;
-  if(this.config && this.config.items && this.config.items.tags) {
-    Object.keys(this.config.items.tags).forEach(function(tag){
-      if(Array.isArray(self.config.items.tags[tag])) {
+  if (this.config && this.config.items && this.config.items.tags) {
+    Object.keys(this.config.items.tags).forEach(function(tag) {
+      if (Array.isArray(self.config.items.tags[tag])) {
         self.config.items.tags[tag].forEach(function(dirname) {
           self.directories.push(dirname);
         });
@@ -279,6 +282,6 @@ Gr.prototype.dirUnique = function() {
                     last = key;
                     return !isDuplicate;
                   });
-}
+};
 
 module.exports = Gr;

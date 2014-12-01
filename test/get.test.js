@@ -8,7 +8,7 @@ var keys = ['abc', 'foo.bar', 'abc.def.ghi'];
 describe('test get and set', function() {
 
   it('set and get a single value in nested', function() {
-    keys.forEach(function (key) {
+    keys.forEach(function(key) {
       var obj = {},
           value = Math.random().toString(36).substring(2);
       set(key, value, obj);
@@ -21,7 +21,7 @@ describe('test get and set', function() {
   });
 
   it('set and get where value exists', function() {
-    keys.forEach(function (key) {
+    keys.forEach(function(key) {
       var obj = {},
           value1 = Math.random().toString(36).substring(2),
           value2 = Math.random().toString(36).substring(2);
@@ -30,7 +30,7 @@ describe('test get and set', function() {
       add(key, value2, obj);
 
       console.log(key, get(key, obj));
-      assert.deepEqual(get(key, obj), [ value1, value2 ]);
+      assert.deepEqual(get(key, obj), [value1, value2]);
     });
   });
 

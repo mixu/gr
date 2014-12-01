@@ -2,7 +2,7 @@
 
 - Tag all the things! `gr @work foo` will run the command `foo` in all the paths tagged `@work`.
 - Auto-discovery of git repositories for easy setup and tag management.
-- `gr` does not reinvent any git operations: instead, it passes through and runs any unknown commands. All your git-fu will still work! e.g. `gr #work git fetch` is the same as running `git fetch` in each all the paths tagged `#work`.
+- `gr` does not reinvent any git operations: instead, it passes through and runs any unknown commands. All your git-fu will still work! e.g. `gr @work git fetch` is the same as running `git fetch` in each all the paths tagged `@work`.
 - Built-in commands for common pain points:
   - `status` for one-line summaries of repos (modified, behind/ahead, tags)
 - Extensible via plugins and middleware: REST API/[Connect](http://senchalabs.github.com/connect)-style request handlers (`function(req, res, next) { ... }`
@@ -48,7 +48,7 @@ Outputs:
 
 ## Getting started
 
-First, [install node.js](http://nodejs.org/download/), which comes with the npm command. 
+First, [install node.js](http://nodejs.org/download/), which comes with the npm command.
 
 Next, to install gr (the name was already taken on npm):
 
@@ -248,7 +248,7 @@ Each plugin consists of an index file which is loaded when gr is started, and wh
 
 Of course, `req` and `res` in the handlers are not HTTP requests, but rather objects representing the target directory (a regular object) and process.stdout.
 
-Each "route" is called multiple times, each time with one path. Assuming `#work` matches two paths, `gr #work status` is translated into multiple indvidual function calls; one for each directory/repository tagged `#work`.
+Each "route" is called multiple times, each time with one path. Assuming `@work` matches two paths, `gr @work status` is translated into multiple indvidual function calls; one for each directory/repository tagged `@work`.
 
       status({ path: '/home/m/foo', argv: ... }, process.stdout, next);
       status({ path: '/home/m/bar', argv: ... }, process.stdout, next);
@@ -256,7 +256,7 @@ Each "route" is called multiple times, each time with one path. Assuming `#work`
 There are three ways to stop processing:
 
 1. Call `res.done()`. This means that the command should be called again for the next path. This is useful for processing commands that target directories.
-2. Call `res.exit()`. This means that the command is complete, and `gr` should exit. For example, we don't want to show a help text multiple times if the user calls `gr #work help`.
+2. Call `res.exit()`. This means that the command is complete, and `gr` should exit. For example, we don't want to show a help text multiple times if the user calls `gr @work help`.
 3. Call `next`. This means that the current handler does not want to handle the current request. Similar to how Connect works, this is mostly used for writing middleware or falling back on a different action.
 
 The `req` object describes the current request.

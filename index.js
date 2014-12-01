@@ -273,14 +273,15 @@ Gr.prototype.addAll = function() {
 
 Gr.prototype.dirUnique = function() {
   var last;
-  this.directories = this.directories.filter(function(k) {
-                    return !!k;
-                  })
+  this.directories = this.directories.filter(Boolean)
                   .sort()
                   .filter(function(key) {
                     var isDuplicate = (key == last);
                     last = key;
                     return !isDuplicate;
+                  })
+                  .filter(function(path) {
+                    return fs.existsSync(path);
                   });
 };
 

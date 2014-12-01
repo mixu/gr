@@ -28,5 +28,8 @@
   "dependencies": {
     "minilog": "~2.0.2",
     "tabtab": "git+https://github.com/mixu/node-tabtab.git"
+  },
+  "devDependencies": {
+    "file-fixture": "0.0.2"
   }
 }

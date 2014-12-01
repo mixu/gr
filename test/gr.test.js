@@ -2,10 +2,11 @@ var assert = require('assert'),
     util = require('util'),
     fs = require('fs'),
     path = require('path'),
-    exec = require('child_process').exec;
+    exec = require('child_process').exec,
+    fixture = require('file-fixture');
 
 var binpath = path.normalize(__dirname + '/../bin/gr'),
-    fixturepath = path.normalize(__dirname + '/fixtures');
+    fixturepath;
 
 function run(args, cwd, onDone) {
   exec(binpath +' ' + args, {
@@ -40,6 +41,13 @@ describe('gr integration tests', function() {
     if(fs.existsSync(confFile)) {
       backup = fs.readFileSync(confFile);
     }
+
+    // fixtures
+    fixturepath = fs.realpathSync(fixture.dir({
+      'a/a.txt': 'a.txt',
+      'b/b.txt': 'b.txt',
+      'c/c.txt': 'c.txt'
+    }));
   });
 
   after(function() {
@@ -182,6 +190,7 @@ describe('gr integration tests', function() {
         fixturepath + '/b',
         fixturepath + '/c'
       ];
+      this.pristineTag = Math.random().toString(36).substring(2);
     });
 
     it('+#tag <p1> <p2> ...    Add a tag to <path>', function(done) {
@@ -190,6 +199,7 @@ describe('gr integration tests', function() {
       run('--json +#' + this.pristineTag + ' '+ this.dirs.join(' '), p, function(result) {
         // get the answer
         run('--json tag ls ' + self.pristineTag, p, function(result) {
+
           assert.ok(Array.isArray(result));
           assert.ok(result.length == 3);
           assert.ok(self.dirs.every(function(v) {

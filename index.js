@@ -82,7 +82,7 @@ Gr.prototype.parseTargets = function(argv) {
       first;
 
   function pushDir(path) {
-    self.directories.push(path);
+    self.directories.push(path.replace(/\\ /g, ' '));
   }
 
   do {

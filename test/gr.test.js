@@ -33,36 +33,34 @@ var backup,
     homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'],
     confFile = homePath+'/.grconfig.json';
 
-exports['gr'] = {
+describe('gr integration tests', function() {
 
-  before: function() {
+  before(function() {
     // backup
     if(fs.existsSync(confFile)) {
       backup = fs.readFileSync(confFile);
     }
-  },
+  });
 
-  after: function() {
+  after(function() {
     // restore
     if(backup) {
       fs.writeFileSync(confFile, backup);
     }
-  },
+  });
 
-// Tagging:
+  // Tagging:
+  describe('pristine - ', function() {
 
-  'pristine -': {
-
-    beforeEach: function(done) {
+    beforeEach(function(done) {
       // add a new random tag
       this.pristineTag = Math.random().toString(36).substring(2);
       run('--json +#'+this.pristineTag, fixturepath+'/a', function(result) {
         done();
       });
-    },
-  //
+    });
 
-    '#tag - List directories associated with "tag"': function(done) {
+    it('#tag - List directories associated with "tag"', function(done) {
       var p = fixturepath+'/a';
       // #foo
       run('--json -t '+this.pristineTag, p, function(result) {
@@ -72,19 +70,19 @@ exports['gr'] = {
         }));
         done();
       });
-    },
+    });
 
     // #tag <cmd>      Run a command in the directories associated with "tag"
-    '-t <tag> <cmd> - Run a command in the directories associated with "tag"': function(done) {
+    it('-t <tag> <cmd> - Run a command in the directories associated with "tag"', function(done) {
       // #foo ls -lah
       run('-t '+this.pristineTag+' ls -lah', fixturepath+'/a', function(result) {
         // check that one of the lines contains "a.txt"
         assert.ok(/a\.txt/.test(result));
         done();
       });
-    },
+    });
 
-    'can mix tags and paths for command execution': function(done) {
+    it('can mix tags and paths for command execution', function(done) {
       // gr -t bar ./fixtures/b cmd
       run('-t '+this.pristineTag+' ' + fixturepath+'/b'+' ls -lah', fixturepath+'/a', function(result) {
         // check that one of the lines contains "a.txt" (via the tag)
@@ -93,10 +91,9 @@ exports['gr'] = {
         assert.ok(/b\.txt/.test(result));
         done();
       });
-    },
+    });
 
-
-    'tag list - List all tags (default action)': function(done) {
+    it('tag list - List all tags (default action)', function(done) {
       var p = fixturepath+'/a',
           pristineTag = this.pristineTag;
       run('--json tag list', p, function(result) {
@@ -107,9 +104,9 @@ exports['gr'] = {
         }));
         done();
       });
-    },
+    });
 
-    '-#tag - Remove a tag from the current directory (cwd)': function(done) {
+    it('-#tag - Remove a tag from the current directory (cwd)', function(done) {
       var p = fixturepath+'/a',
           tag = this.pristineTag;
       // -#foo
@@ -124,31 +121,30 @@ exports['gr'] = {
           done();
         });
       });
-    },
+    });
 
-    'tag rm <tag> - Alternative to -#tag': function(done) {
+    it('tag rm <tag> - Alternative to -#tag', function(done) {
       var p = fixturepath + '/b',
           tag = this.pristineTag;
       run('--json tag rm ' + tag, p, function(result) {
         assert.deepEqual(result, { op: 'rm', tag: tag, path: p });
         done();
       });
-    },
-  },
+    });
 
-  'can set the command explicitly using --': function() {
-    // gr #foo -- cmd
-  },
+  });
 
-  'a target that is not a directory is treated as a command': function() {
-    // gr dir file.sh
-  },
+  xdescribe('can set the command explicitly using --', function() {
+    xit('gr #foo -- cmd');
+  });
 
-  'if no target is given, then all tagged paths are used': function() {
+  xdescribe('a target that is not a directory is treated as a command', function() {
+    xit('gr dir file.sh');
+  });
 
-  },
+  xdescribe('if no target is given, then all tagged paths are used', function() {});
 
-  '+#tag - Add a tag to the current directory (cwd)': function(done) {
+  it('+#tag - Add a tag to the current directory (cwd)', function(done) {
     var p = fixturepath+'/a',
         tag = Math.random().toString(36).substring(2);
     run('--json +#' + tag, p, function(result) {
@@ -161,9 +157,9 @@ exports['gr'] = {
         done();
       });
     });
-  },
+  });
 
-  'tag add <tag> - Alternative to +#tag (cwd)': function(done) {
+  it('tag add <tag> - Alternative to +#tag (cwd)', function(done) {
     var p = fixturepath + '/b',
         tag = Math.random().toString(36).substring(2);
     run('--json tag add ' + tag, p, function(result) {
@@ -176,18 +172,19 @@ exports['gr'] = {
         done();
       });
     });
-  },
+  });
 
-  'add and remove tag to multiple dirs': {
-    before: function() {
+  describe('add and remove tag to multiple dirs', function() {
+
+    before(function() {
       this.dirs = [
         fixturepath + '/a',
         fixturepath + '/b',
         fixturepath + '/c'
       ];
-    },
+    });
 
-    '+#tag <p1> <p2> ...    Add a tag to <path>': function(done) {
+    it('+#tag <p1> <p2> ...    Add a tag to <path>', function(done) {
       var self = this,
           p = fixturepath+'/a';
       run('--json +#' + this.pristineTag + ' '+ this.dirs.join(' '), p, function(result) {
@@ -201,9 +198,9 @@ exports['gr'] = {
           done();
         });
       });
-    },
+    });
 
-    'tag add <t> <p1> <p2> ... Alternative to +#tag <path>': function(done) {
+    it('tag add <t> <p1> <p2> ... Alternative to +#tag <path>', function(done) {
       var self = this,
           p = fixturepath+'/a';
       run('--json tag add ' + this.pristineTag + ' '+ this.dirs.join(' '), p, function(result) {
@@ -217,14 +214,7 @@ exports['gr'] = {
           done();
         });
       });
-    }
-  },
-
-  'pre-tag -': {
-
-    before: function() {
-
-    },
+    });
 
     //     -#tag <path>    Remove a tag from <path>
     //     tag rm <t> <p>  Alternative to -#tag <path>
@@ -233,16 +223,16 @@ exports['gr'] = {
     // gr -#foo path1 path2 path3
     // TODO
 
-  },
+  });
 
-  'config': {
+  describe('config', function() {
 
-    beforeEach: function() {
+    beforeEach(function() {
       this.key = 'test.' + Math.random().toString(36).substring(2);
       this.value = Math.random().toString(36).substring(2);
-    },
+    });
 
-    'set <k> <v>   Set a config key (overwrites existing value)': function(done) {
+    it('set <k> <v>   Set a config key (overwrites existing value)', function(done) {
       var key = this.key, value = this.value;
       run('--json config set ' + key + ' ' + value, fixturepath+'/a', function(result) {
         run('--json config get ' + key, fixturepath+'/a', function(result) {
@@ -250,9 +240,9 @@ exports['gr'] = {
           done();
         });
       });
-    },
+    });
 
-    'add <k> <v>   Add a value to a config key (appends rather than overwriting)': function(done) {
+    it('add <k> <v>   Add a value to a config key (appends rather than overwriting)', function(done) {
       var key = this.key, value = this.value;
       run('--json config add ' + key + ' ' + value, fixturepath+'/a', function(result) {
         run('--json config get ' + key, fixturepath+'/a', function(result) {
@@ -261,9 +251,9 @@ exports['gr'] = {
           done();
         });
       });
-    },
+    });
 
-    'rm <k> <v>    Remove a value from a config key (if it exists)': function(done) {
+    it('rm <k> <v>    Remove a value from a config key (if it exists)', function(done) {
       this.timeout(4000);
       var key = this.key, value = this.value, value2 = this.value + 'aa';
       run('--json config add ' + key + ' ' + value, fixturepath+'/a', function(result) {
@@ -279,9 +269,9 @@ exports['gr'] = {
           });
         });
       });
-    },
+    });
 
-    'list - List all configuration (default action)': function(done) {
+    it('list - List all configuration (default action)', function(done) {
       var key = this.key, value = this.value;
       run('--json config set ' + key + ' ' + value, fixturepath+'/a', function(result) {
         run('--json config list', fixturepath+'/a', function(result) {
@@ -291,8 +281,10 @@ exports['gr'] = {
           done();
         });
       });
-    }
-  }
+    });
+
+  });
+
 
 // Not worth testing automatically:
 //     gr tag discover    Auto-discover git paths under ~/
@@ -310,12 +302,5 @@ exports['gr'] = {
 
   }
 */
-};
 
-// if this module is the script being run, then run the tests:
-if (module == require.main) {
-  var mocha = require('child_process').spawn('mocha', [ '--colors', '--ui', 'exports', '--reporter', 'spec', __filename ]);
-  mocha.stderr.on('data', function (data) { if (/^execvp\(\)/.test(data)) console.log('Failed to start child process. You need mocha: `npm install -g mocha`') });
-  mocha.stdout.pipe(process.stdout);
-  mocha.stderr.pipe(process.stderr);
-}
+});

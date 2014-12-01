@@ -1,7 +1,8 @@
 var log = require('minilog')('gr-run'),
     path = require('path'),
     style = require('../lib/style.js'),
-    run = require('../lib/run.js');
+    run = require('../lib/run.js'),
+    commandRequirements = require('../lib/command-requirements.js');
 
 module.exports = function(req, res, next) {
 
@@ -20,8 +21,16 @@ module.exports = function(req, res, next) {
 
   if (task[0] == 'git') {
     // for "git" tasks, add the color option
- //   task.splice(1, 0, '-c color.ui=always');
+    // task.splice(1, 0, '-c color.ui=always');
+    // disabled for now, as it causes some issues with commands, maybe need to
+    // insert as array items?
   }
+  if (commandRequirements[task[0]]) {
+    if (!commandRequirements[task[0]](req)) {
+      return req.done();
+    }
+  }
+
   if (req.format == 'human') {
     console.log(
       style('\nin ' + dirname, 'gray') +

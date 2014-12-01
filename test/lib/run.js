@@ -22,4 +22,4 @@ module.exports = function run(args, cwd, onDone) {
         }
         onDone(json);
       });
-}
+};

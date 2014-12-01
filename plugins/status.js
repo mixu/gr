@@ -1,7 +1,8 @@
 var log = require('minilog')('gr-status'),
     path = require('path'),
     style = require('../lib/style.js'),
-    run = require('../lib/run.js');
+    run = require('../lib/run.js'),
+    commandRequirements = require('../lib/command-requirements.js');
 
 var exec = require('child_process').exec;
 
@@ -19,6 +20,18 @@ module.exports = function(req, res, next) {
       new Array(len - s.toString().length).join(' ') : '');
   }
 
+  // force human format, makes commandRequirements print out when skipping
+  if (!commandRequirements.git({ format: 'json', path: cwd })) {
+
+    console.log(
+      style(dirname, 'gray') +
+      style(path.basename(cwd), 'white') +
+      pad(dirname + path.basename(cwd), pathMaxLen) + ' ' +
+      'has no .git subdirectory.'
+    );
+    return req.done();
+  }
+
   // search for matching tags
   tags = req.gr.getTagsByPath(cwd);
 
@@ -27,7 +40,8 @@ module.exports = function(req, res, next) {
       style('\nin ' + dirname, 'gray') +
       style(path.basename(cwd), 'white') + '\n'
       );
-    run('git -c color.status=always status -sb', cwd, req.done);
+
+    run(['git', '-c', 'color.status=always', 'status', '-sb'], cwd, req.done);
   } else {
     var task = exec('git status --porcelain ', {
         cwd: cwd,

@@ -162,6 +162,9 @@ Gr.prototype.exec = function(argv, exit) {
   var self = this,
       tasks = [];
 
+  // unique, non-empty only
+  this.dirUnique();
+
   // if no paths, just push one task
   if (this.directories.length === 0) {
     tasks.push(function(onDone) {

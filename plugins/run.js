@@ -4,6 +4,7 @@ var log = require('minilog')('gr-run'),
     run = require('../lib/run.js');
 
 module.exports = function(req, res, next) {
+
   // if argv is empty, skip
   if (req.argv.length === 0) {
     return next();
@@ -19,7 +20,7 @@ module.exports = function(req, res, next) {
 
   if (task[0] == 'git') {
     // for "git" tasks, add the color option
-    parts.splice(1, 0, '-c color.ui=always');
+ //   task.splice(1, 0, '-c color.ui=always');
   }
   if (req.format == 'human') {
     console.log(
@@ -27,5 +28,9 @@ module.exports = function(req, res, next) {
       style(path.basename(req.path), 'white') + '\n'
       );
   }
-  run(task.join(' '), req.path, req.done);
+
+  // always directly pass the full array,
+  // stringifying here is harmful because it will lose quoted strings
+  // which are unquoted by the shell on invocation
+  run(task, req.path, req.done);
 };

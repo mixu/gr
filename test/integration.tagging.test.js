@@ -29,21 +29,21 @@ describe('integration tagging', function() {
   after(function() {
     restore();
   });
-
   // Tagging:
+
   describe('pristine - ', function() {
 
     beforeEach(function(done) {
       // add a new random tag
       this.pristineTag = Math.random().toString(36).substring(2);
-      run('--json +#' + this.pristineTag, fixturepath + '/a', function(result) {
+      run('--json +@' + this.pristineTag, fixturepath + '/a', function(result) {
         done();
       });
     });
 
-    it('#tag - List directories associated with "tag"', function(done) {
+    it('@tag - List directories associated with "tag"', function(done) {
       var p = fixturepath + '/a';
-      // #foo
+      // @foo
       run('--json -t ' + this.pristineTag, p, function(result) {
         assert.ok(Array.isArray(result));
         assert.ok(result.some(function(v) {
@@ -53,9 +53,9 @@ describe('integration tagging', function() {
       });
     });
 
-    // #tag <cmd>      Run a command in the directories associated with "tag"
+    // @tag <cmd>      Run a command in the directories associated with "tag"
     it('-t <tag> <cmd> - Run a command in the directories associated with "tag"', function(done) {
-      // #foo ls -lah
+      // @foo ls -lah
       run('-t ' + this.pristineTag + ' ls -lah', fixturepath + '/a', function(result) {
         // check that one of the lines contains "a.txt"
         assert.ok(/a\.txt/.test(result));
@@ -87,12 +87,12 @@ describe('integration tagging', function() {
       });
     });
 
-    it('-#tag - Remove a tag from the current directory (cwd)', function(done) {
+    it('-@tag - Remove a tag from the current directory (cwd)', function(done) {
       var p = fixturepath + '/a',
           tag = this.pristineTag;
-      // -#foo
+      // -@foo
       // tag rm foo
-      run('--json -#' + tag, p, function(result) {
+      run('--json -@' + tag, p, function(result) {
         assert.deepEqual(result, { op: 'rm', tag: tag, path: p });
         run('--json tag ls ' + tag, p, function(result) {
           assert.ok(Array.isArray(result));
@@ -104,7 +104,7 @@ describe('integration tagging', function() {
       });
     });
 
-    it('tag rm <tag> - Alternative to -#tag', function(done) {
+    it('tag rm <tag> - Alternative to -@tag', function(done) {
       var p = fixturepath + '/b',
           tag = this.pristineTag;
       run('--json tag rm ' + tag, p, function(result) {
@@ -116,10 +116,10 @@ describe('integration tagging', function() {
   });
 
 
-  it('+#tag - Add a tag to the current directory (cwd)', function(done) {
+  it('+@tag - Add a tag to the current directory (cwd)', function(done) {
     var p = fixturepath + '/a',
         tag = Math.random().toString(36).substring(2);
-    run('--json +#' + tag, p, function(result) {
+    run('--json +@' + tag, p, function(result) {
       // get the answer
       run('--json tag ls ' + tag, p, function(result) {
         assert.ok(Array.isArray(result));
@@ -131,7 +131,7 @@ describe('integration tagging', function() {
     });
   });
 
-  it('tag add <tag> - Alternative to +#tag (cwd)', function(done) {
+  it('tag add <tag> - Alternative to +@tag (cwd)', function(done) {
     var p = fixturepath + '/b',
         tag = Math.random().toString(36).substring(2);
     run('--json tag add ' + tag, p, function(result) {
@@ -157,10 +157,10 @@ describe('integration tagging', function() {
       this.pristineTag = Math.random().toString(36).substring(2);
     });
 
-    it('+#tag <p1> <p2> ...    Add a tag to <path>', function(done) {
+    it('+@tag <p1> <p2> ...    Add a tag to <path>', function(done) {
       var self = this,
           p = fixturepath + '/a';
-      run('--json +#' + this.pristineTag + ' ' + this.dirs.join(' '), p, function(result) {
+      run('--json +@' + this.pristineTag + ' ' + this.dirs.join(' '), p, function(result) {
         // get the answer
         run('--json tag ls ' + self.pristineTag, p, function(result) {
 
@@ -174,7 +174,7 @@ describe('integration tagging', function() {
       });
     });
 
-    it('tag add <t> <p1> <p2> ... Alternative to +#tag <path>', function(done) {
+    it('tag add <t> <p1> <p2> ... Alternative to +@tag <path>', function(done) {
       var self = this,
           p = fixturepath + '/a';
       run('--json tag add ' + this.pristineTag + ' ' + this.dirs.join(' '), p, function(result) {
@@ -190,11 +190,11 @@ describe('integration tagging', function() {
       });
     });
 
-    //     -#tag <path>    Remove a tag from <path>
-    //     tag rm <t> <p>  Alternative to -#tag <path>
+    //     -@tag <path>    Remove a tag from <path>
+    //     tag rm <t> <p>  Alternative to -@tag <path>
     // TODO
 
-    // gr -#foo path1 path2 path3
+    // gr -@foo path1 path2 path3
     // TODO
 
   });

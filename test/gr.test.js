@@ -51,9 +51,46 @@ describe('gr integration tests', function() {
     run(fixturepath + '/a' + ' node ' +
       utilpath + '/bin/echoback.js ' +
       ' "foo bar"', fixturepath + '/a', function(result) {
-      console.log(result);
       assert.ok(/\[ 'foo bar' \]/.test(result));
       done();
+    });
+  });
+
+  describe('path with spaces', function() {
+    var fixturepath = fs.realpathSync(fixture.dir({
+      'this path has spaces/file.txt': 'file.txt'
+    }));
+
+    it('can tag a folder using quotes', function(done) {
+      var tag = Math.random().toString(36).substring(2),
+          expected = fixturepath + '/this path has spaces';
+
+      run('--json +@' + tag + ' "' + expected + '"', fixturepath, function(result) {
+        // get the answer
+        run('--json tag ls ' + tag, fixturepath, function(result) {
+          assert.ok(Array.isArray(result));
+          assert.ok(result.some(function(v) {
+            return v == expected;
+          }));
+          done();
+        });
+      });
+    });
+
+    it('can tag a folder using escaped spaces', function(done) {
+      var tag = Math.random().toString(36).substring(2),
+          expected = fixturepath + '/this path has spaces';
+
+      run('--json +@' + tag + ' ' + expected.replace(/ /g, '\\ '), fixturepath, function(result) {
+        // get the answer
+        run('--json tag ls ' + tag, fixturepath, function(result) {
+          assert.ok(Array.isArray(result));
+          assert.ok(result.some(function(v) {
+            return v == expected;
+          }));
+          done();
+        });
+      });
     });
   });
 

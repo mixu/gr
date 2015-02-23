@@ -48,19 +48,22 @@ Outputs:
 
 ## Getting started
 
-First, [install node.js](http://nodejs.org/download/), which comes with the npm command.
+First, [install Node.js](http://nodejs.org/download/). Node.js also adds the `npm` command.
 
-Next, to install gr (the name was already taken on npm):
+Next, to install `gr` (the name was already taken on npm):
 
     npm install -g git-run
 
 You may need to prefix this with `sudo`. 
 
+### Setting up tags
 Use the auto-discovery feature to set up tags quickly:
 
     gr tag discover
 
-Auto-discovery searches all paths under your home path; generates a list and opens the list in your default console editor. This file will look like this:
+Auto-discovery searches all paths under your home directory, generates a list, and opens it in your default console editor. 
+
+It will look like this:
 
     # Found the following directories with `.git` directories.
     #
@@ -73,17 +76,19 @@ Auto-discovery searches all paths under your home path; generates a list and ope
     ~/foo
     ~/bar/baz
 
-Add tags after each path, save the file and exit. Now, your tags are set up.
+Add tags after each path, save the file, and exit. 
 
-Run `gr status` or `gr tag list` to verify; and try `gr @work status` or `gr @work ls -lah` to see how commands are executed. `status` is a built-in command; `ls -lah` is not so it is run in each of the paths.
+Your tags are now set up!
 
-You can run auto-discovery multiple times; it makes making bulk changes to tags quite easy.
+Verify with `gr status` or `gr tag list`. Use `gr @work status` or `gr @work ls -lah` to see how commands are executed. (`status` is a built-in command; `ls -lah` is not, so it is run in each of the paths.)
+
+You can run auto-discovery multiple times. It makes tag-related bulk changes  quite easy.
 
 ## Tab completion
 
 To add tab completion:
 
-- open your `~/.zshrc` or `~/.bashrc` (`~/.bash_profile` on OSX)
+- open your `~/.zshrc` or `~/.bashrc` (`~/.bash_profile` on OS X)
 - add the line `. <(gr completion)` at the end of the file
 - then, to apply this change to your current session, run `source ~/.zshrc` (or `source ~/.bashrc` or `source ~/bash_profile`)
 
@@ -117,7 +122,7 @@ Some examples:
 
 `gr @work git --no-pager log --decorate --graph --oneline -n 3`
 
-Of course, I don't actually type these out. Instead, I am using `zsh` aliases. `grd` is for diff, `grdc` is for diff --cached; `grl` is for the log. For example, in `.zshrc`:
+Of course, I don't actually type these out; I'm using `zsh` aliases instead. `grd` is for diff, `grdc` is for `diff --cached`; `grl` is for the log. For example, in `.zshrc`:
 
     alias grs="gr status"
     alias grl="gr git --no-pager log --decorate --graph --oneline -n 3"
@@ -136,12 +141,13 @@ Currently, there is just one option: `--json`, which switched to a machine-reada
 
 ## Targets
 
-The targets can be paths or tags. For example:
+Targets can be *paths* or *tags*. For example:
 
     gr ~/foo ~/bar status
     gr @work ls -lah
 
-Path targets should be directories. Tags refer to sets of directories. They managed using the `tag` built-in.
+- **Path** targets should be directories. 
+- **Tags** refer to sets of directories. They managed using the `tag` built-in.
 
 If you are using a scripting language that uses `#` for comments, you can also write tags as `-t foo`.
 
@@ -168,7 +174,7 @@ Long form:
     tag list        List all tags (default action)
     tag discover    Auto-discover git paths under ~/
 
-For example:
+Example:
 
     gr +@work ~/bar
 
@@ -246,9 +252,9 @@ Each plugin consists of an index file which is loaded when gr is started, and wh
       });
     };
 
-Of course, `req` and `res` in the handlers are not HTTP requests, but rather objects representing the target directory (a regular object) and process.stdout.
+Of course, `req` and `res` in the handlers are not HTTP requests, but rather objects representing the target directory (a regular object) and `process.stdout`.
 
-Each "route" is called multiple times, each time with one path. Assuming `@work` matches two paths, `gr @work status` is translated into multiple indvidual function calls; one for each directory/repository tagged `@work`.
+Each "route" is called multiple times, each with one path. Thus, assuming `@work` matches two paths, `gr @work status` is translated into multiple indvidual function calls; one for each directory/repository tagged `@work`.
 
       status({ path: '/home/m/foo', argv: ... }, process.stdout, next);
       status({ path: '/home/m/bar', argv: ... }, process.stdout, next);
@@ -286,34 +292,36 @@ Here are some plugin ideas:
 - extend auto-discovery beyond git
 - run tests
 - run jshint / gjslint (only modified?)
-- do npm / package.json linting
+- do npm / `package.json` linting
 - generate docs
 - fetch and report status as one action
-- report npm versions (and whether the version of the package on npm is up to date)
+- report `npm` versions (and whether the version of the package on npm is up to date)
 - generate a changelog (between tagged versions)
 - check that npm modules are up to date
-- run npm link on all modules
+- run `npm link` on all modules
 - generate a list of authors
 - generate a list of licences
-- xargs -compatibility
+- `xargs` compatibility
 - Ability to confirm each command (to make it possible to skip)
-- Ability expose other statuses, e.g. npm outdated
+- Ability expose other statuses (e.g., `npm outdated`)
 
 ## Make your plugin searchable
 
-If you write a plugin, make sure to add the `gr` keyword to (in [package.json](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching npm by tag](https://npmjs.org/browse/keyword/gr). Also, file a PR against this readme if you want to have your plugin listed here.
+If you write a plugin, make sure to add the `gr` keyword to (in [`package.json`](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching `npm` by tag](https://npmjs.org/browse/keyword/gr). 
+
+Also, file a PR against this README if you want to have your plugin listed here.
 
 ## Status matching idea
 
-This is just a random idea - using "meta-tags" to target commands based on `git ls-files`.
+(This is just a random idea) Using "meta-tags" to target commands based on `git ls-files`.
 
-- clean: Clean working directory - in other words, no tracked files are modified; no untracked files exist.
-- untracked: Has files that are not tracked (but that have not been added to tracking)
-- modified: Has files that are tracked and modified (but that have not been staged)
-- deleted: Has files that are tracked and deleted
+- `clean`: Clean working directory - in other words, no tracked files are modified; no untracked files exist.
+- `untracked`: Has files that are not tracked (but that have not been added to tracking)
+- `modified`: Has files that are tracked and modified (but that have not been staged)
+- `deleted`: Has files that are tracked and deleted
 - staged: Has files that are staged for commit (but that have not been committed)
-- unmerged: Has files that have not been merged
-- unclean: Does not have a clean working directory.
+- `unmerged`: Has files that have not been merged
+- `unclean`: Does not have a clean working directory.
 
 For example: `gr @clean git fetch`
 

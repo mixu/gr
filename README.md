@@ -98,29 +98,15 @@ Now, when you type `gr <tab>`, you'll see the list tags you've created. If you n
 
 Some examples:
 
-### To update all my work repos
+COMMAND                                                         | TASK
+-------                                                         | ----
+`gr @work git fetch` and then `gr @work status`                 | Update all my work repos. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
+`gr @work git diff` or `gr @work git diff --cached`             | See diffs
+`gr @work jshint . --exclude=**/node_modules`                   | Run `jshint`
+`gr @write make`                                                | Rebuild all my writing via `make` 
+`gr @work npm ls`                                               | List install npm modules
+`gr @work git --no-pager log --decorate --graph --oneline -n 3` | Print a graph-like log
 
-`gr @work git fetch` and then `gr @work status`. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
-
-### To see diffs
-
-`gr @work git diff` or `gr @work git diff --cached`.
-
-### To run jshint
-
-`gr @work jshint . --exclude=**/node_modules`
-
-### To rebuild all my writing via make
-
-`gr @write make`
-
-### To list the npm modules installed
-
-`gr @work npm ls`
-
-### To print a graph-like log
-
-`gr @work git --no-pager log --decorate --graph --oneline -n 3`
 
 Of course, I don't actually type these out; I'm using `zsh` aliases instead. `grd` is for diff, `grdc` is for `diff --cached`; `grl` is for the log. For example, in `.zshrc`:
 
@@ -221,7 +207,7 @@ Tags can also be specified more explicitly. For example `gr -t work -t play` is 
 
 TODO: 
 
-- [bootstrap](#TODO): bootstraps a set of repositories from a config file.
+- [`bootstrap`](#TODO): bootstraps a set of repositories from a config file.
 
 ## Installing plugins
 

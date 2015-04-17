@@ -162,6 +162,31 @@ Gr.prototype.exec = function(argv, exit) {
   var self = this,
       tasks = [];
 
+
+  pi.fromArray(toDirectories(argv))
+    // unique only
+    .pipe(pi.thru.obj(function(dir, enc, done) {
+
+    }, function(done) {
+
+    }))
+    // non-empty only
+    .pipe(pi.filter(function() {
+      //
+      return
+    }))
+    // to tasks
+    .pipe(pi.map(function(dir) {
+      // convert to task
+
+    })
+    // run tasks serially
+    .pipe(pi.queue(1))
+    // eat the output
+    .pipe(pi.devnull());
+
+
+
   // unique, non-empty only
   this.dirUnique();
 

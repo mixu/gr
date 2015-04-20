@@ -48,7 +48,7 @@ Outputs:
 
 ## Getting started
 
-First, [install Node.js](http://nodejs.org/download/). Node.js also adds the `npm` command.
+First, [install Node.js](http://nodejs.org/download/). Node.js adds the `node` and the `npm` command. On Ubuntu you need the `nodejs-legacy` package.
 
 Next, to install `gr` (the name was already taken on npm):
 

@@ -80,14 +80,14 @@ var argv = gr.preprocess(process.argv.slice(2));
 argv = gr.parseTargets(argv);
 // process.stderr.write(JSON.stringify(argv));
 
-// @foo @bar => will just output
+// default command: list
 if(argv.length == 0) {
   if(gr.format == 'json') {
     console.log(JSON.stringify(gr.directories, null, 2));
+    return;
   } else {
-    log.info('Paths', gr.directories);
+    argv = ['list'];
   }
-  return;
 }
 
 // execute for each target

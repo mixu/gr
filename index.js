@@ -140,6 +140,8 @@ Gr.prototype.parseTargets = function(argv) {
 
   // unique, non-empty only
   this.dirUnique();
+  this.dirExist();
+
   // apply exclusions
   this.exclude([].concat(this.config.get('exclude'), argv['exclude']));
   delete argv['exclude'];
@@ -162,8 +164,9 @@ Gr.prototype.exec = function(argv, exit) {
   var self = this,
       tasks = [];
 
-  // unique, non-empty only
+  // unique, existing directories only
   this.dirUnique();
+  this.dirExist();
 
   // if no paths, just push one task
   if (this.directories.length === 0) {
@@ -282,7 +285,11 @@ Gr.prototype.dirUnique = function() {
                     var isDuplicate = (key == last);
                     last = key;
                     return !isDuplicate;
-                  })
+                  });
+};
+
+Gr.prototype.dirExist = function() {
+  this.directories = this.directories.filter(Boolean)
                   .filter(function(path) {
                     return fs.existsSync(path);
                   });

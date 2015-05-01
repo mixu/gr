@@ -1,4 +1,7 @@
-var log = require('minilog')('gr-status'),
+/**
+ * The status plugin shows status information for each repository.
+ */
+var fs = require('fs'),
     path = require('path'),
     style = require('../lib/style.js'),
     run = require('../lib/run.js'),
@@ -27,7 +30,7 @@ module.exports = function(req, res, next) {
       style(dirname, 'gray') +
       style(path.basename(cwd), 'white') +
       pad(dirname + path.basename(cwd), pathMaxLen) + ' ' +
-      'has no .git subdirectory.'
+      style('Missing .git directory', 'red')
     );
     return req.done();
   }

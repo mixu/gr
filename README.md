@@ -1,3 +1,9 @@
+## This Fork
+
+The purpose of this fork is to expand bash aliases, allowing you to run commands like `gr @something gl` when you've got `alias gl='git pull'` in your profile. **Currently only works for bash.**
+
+To install this fork: `npm install -g git+ssh://git@github.com:michaek/gr.git`
+
 ## Features
 
 - Tag all the things! `gr @work foo` will run the command `foo` in all the paths tagged `@work`.

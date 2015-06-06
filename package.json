@@ -1,6 +1,6 @@
 {
   "name": "git-run",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A tool for managing multiple git repositories",
   "main": "index.js",
   "scripts": {

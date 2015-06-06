@@ -11,6 +11,8 @@
 
 ## Changelog
 
+- Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
+- `0.4.0`: Added several usability improvements and bug fixes, courtesy of @nichtich (better handling of missing directories, support for simple paths). Added a fix that improves errors related to directory permissions, courtesy of @pnxs.
 - `0.3.0`: Switched from `#foo` to `@foo` for tags; while the `#foo` syntax looks cool, most shells will treat it as a comment unless the tag is surrounded by quotes. Looking back at the design, I'd rather go for usability over pretty looking commands. Updated the documentation to match this change.
 
 ## Example
@@ -54,14 +56,14 @@ Next, to install `gr` (the name was already taken on npm):
 
     npm install -g git-run
 
-You may need to prefix this with `sudo`. 
+You may need to prefix this with `sudo`.
 
 ### Setting up tags
 Use the auto-discovery feature to set up tags quickly:
 
     gr tag discover
 
-Auto-discovery searches all paths under your home directory, generates a list, and opens it in your default console editor. 
+Auto-discovery searches all paths under your home directory, generates a list, and opens it in your default console editor.
 
 It will look like this:
 
@@ -76,7 +78,7 @@ It will look like this:
     ~/foo
     ~/bar/baz
 
-Add tags after each path, save the file, and exit. 
+Add tags after each path, save the file, and exit.
 
 Your tags are now set up!
 
@@ -103,7 +105,7 @@ COMMAND                                                         | TASK
 `gr @work git fetch` and then `gr @work status`                 | Update all my work repos. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
 `gr @work git diff` or `gr @work git diff --cached`             | See diffs
 `gr @work jshint . --exclude=**/node_modules`                   | Run `jshint`
-`gr @write make`                                                | Rebuild all my writing via `make` 
+`gr @write make`                                                | Rebuild all my writing via `make`
 `gr @work npm ls`                                               | List install npm modules
 `gr @work git --no-pager log --decorate --graph --oneline -n 3` | Print a graph-like log
 
@@ -132,7 +134,7 @@ Targets can be *paths* or *tags*. For example:
     gr ~/foo ~/bar status
     gr @work ls -lah
 
-- **Path** targets should be directories. 
+- **Path** targets should be directories.
 - **Tags** refer to sets of directories. They managed using the `tag` built-in.
 
 If you are using a scripting language that uses `#` for comments, you can also write tags as `-t foo`.
@@ -205,7 +207,7 @@ Tags can also be specified more explicitly. For example `gr -t work -t play` is 
 
 ## Plugins
 
-TODO: 
+TODO:
 
 - [`bootstrap`](#TODO): bootstraps a set of repositories from a config file.
 
@@ -293,7 +295,7 @@ Here are some plugin ideas:
 
 ## Make your plugin searchable
 
-If you write a plugin, make sure to add the `gr` keyword to (in [`package.json`](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching `npm` by tag](https://npmjs.org/browse/keyword/gr). 
+If you write a plugin, make sure to add the `gr` keyword to (in [`package.json`](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching `npm` by tag](https://npmjs.org/browse/keyword/gr).
 
 Also, file a PR against this README if you want to have your plugin listed here.
 

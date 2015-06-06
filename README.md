@@ -11,7 +11,7 @@
 
 ## Changelog
 
-- Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
+- Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know it can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
 - `0.4.0`: Added several usability improvements and bug fixes, courtesy of @nichtich (better handling of missing directories, support for simple paths). Added a fix that improves errors related to directory permissions, courtesy of @pnxs.
 - `0.3.0`: Switched from `#foo` to `@foo` for tags; while the `#foo` syntax looks cool, most shells will treat it as a comment unless the tag is surrounded by quotes. Looking back at the design, I'd rather go for usability over pretty looking commands. Updated the documentation to match this change.
 

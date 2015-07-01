@@ -166,6 +166,16 @@ Example:
 
     gr +@work ~/bar
 
+Internally, the tags are stored in the config file `~/.grconfig.json`. For example, the tag `@books` for the path `/home/m/mnt/css-book` would be stored as:
+
+    {
+     "tags": {
+      "books": [
+        "/home/m/mnt/css-book" 
+      ]
+    }
+For some use cases, it may be easier to just edit this file rather than use the commands `tag add` and `tag rm`.
+
 ## Commands
 
 The command can be either one of the built-in commands, or a shell command. For example:

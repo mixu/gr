@@ -58,7 +58,7 @@ module.exports = function(req, res, next) {
         var branchInfo = lines.shift();
 
         // parse
-        var behind = branchInfo.match(/(\[.+\])/g) || '',
+        var behind = (branchInfo || '').match(/(\[.+\])/g) || '',
             modified = (lines.length > 0 ?
               lines.length + ' modified' :
               'Clean'

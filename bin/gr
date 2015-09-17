@@ -67,6 +67,8 @@ gr.use(['tag', 'list'], tag.list);
 gr.use(['tag', 'ls'], tag.list);
 gr.use(['tag', 'discover'], tag.discover);
 gr.use(['tag'], tag.list);
+// for usability: gr discover should run gr tag discover
+gr.use(['discover'], tag.discover);
 
 // default: run the remainder as a shell task
 gr.use('--', require('../plugins/run.js'));

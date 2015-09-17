@@ -107,7 +107,7 @@ var spawn = require('child_process').spawn,
     findBySubdir = require('../lib/find-by-subdir.js');
 
 function discover(req, res, next) {
-  var discoverPath = (req.argv ? req.argv[0] : req.gr.homePath),
+  var discoverPath = (req.argv.length > 0 ? req.argv[0] : req.gr.homePath),
       repos = (req.gr.directories ? req.gr.directories : []),
       pathMaxLen = repos.reduce(function(prev, current) {
         return Math.max(prev, current.replace(req.gr.homePath, '~').length + 2);

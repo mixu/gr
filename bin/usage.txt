@@ -40,12 +40,13 @@ Tags can also be specified more explicitly; this is useful if you are using a sc
 ## Built-in commands:
 
 gr tag ..
-  add <t>         Add a tag to the current directory
-  rm <t>          Remove a tag from the current directory
-  add <t> <path>  Add a tag to <path>
-  rm <t> <path>   Remove a tag from <path>
-  list            List all tags (default action)
-  discover        Auto-discover git paths under ~/
+  add <t>           Add a tag to the current directory
+  rm <t>            Remove a tag from the current directory
+  add <t> <path>    Add a tag to <path>
+  rm <t> <path>     Remove a tag from <path>
+  list              List all tags (default action)
+  discover <path>   Auto-discover git paths under <path>
+                    (<path> defaults to ~/ if omitted)
 
 gr list        List all known repositories and their tags
 

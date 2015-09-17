@@ -64,7 +64,13 @@ Use the auto-discovery feature to set up tags quickly:
 
     gr tag discover
 
-Auto-discovery searches all paths under your home directory, generates a list, and opens it in your default console editor.
+By default auto-discovery searches all paths under your home directory.
+
+If you'd prefer, you can specify a directory under which auto-discovery should search:
+
+    gr tag discover /mnt/external/projects
+
+Once auto-discovery completes, it will generate a list, and open it in your default console editor.
 
 It will look like this:
 

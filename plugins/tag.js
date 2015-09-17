@@ -107,7 +107,8 @@ var spawn = require('child_process').spawn,
     findBySubdir = require('../lib/find-by-subdir.js');
 
 function discover(req, res, next) {
-  var repos = (req.gr.directories ? req.gr.directories : []),
+  var discoverPath = (req.argv ? req.argv[0] : req.gr.homePath),
+      repos = (req.gr.directories ? req.gr.directories : []),
       pathMaxLen = repos.reduce(function(prev, current) {
         return Math.max(prev, current.replace(req.gr.homePath, '~').length + 2);
       }, 0);
@@ -117,10 +118,9 @@ function discover(req, res, next) {
       new Array(len - s.toString().length).join(' ') : '');
   }
 
-
   var editor = process.env['GIT_EDITOR'] || process.env['EDITOR'] || 'nano',
       tmpfile = os.tmpDir() + '/gr-repos-tmp.txt',
-      gitPaths = findBySubdir(req.gr.homePath, ['.git']),
+      gitPaths = findBySubdir(discoverPath, ['.git']),
       append = '';
 
   // for each git path:

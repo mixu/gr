@@ -91,7 +91,7 @@ Your tags are now set up!
 
 Verify with `gr status` or `gr tag list`. Use `gr @work status` or `gr @work ls -lah` to see how commands are executed. (`status` is a built-in command; `ls -lah` is not, so it is run in each of the paths.)
 
-You can run auto-discovery multiple times. It makes tag-related bulk changes  quite easy.
+You can run auto-discovery multiple times. It makes tag-related bulk changes quite easy.
 
 ## Tab completion
 
@@ -143,8 +143,6 @@ Targets can be *paths* or *tags*. For example:
 
 - **Path** targets should be directories.
 - **Tags** refer to sets of directories. They managed using the `tag` built-in.
-
-If you are using a scripting language that uses `#` for comments, you can also write tags as `-t foo`.
 
 If no targets are given, then all tagged paths are used. For example, `gr status` will report the status of all repositories.
 

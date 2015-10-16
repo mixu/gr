@@ -12,6 +12,7 @@
 ## Changelog
 
 - Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know it can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
+- `0.5.0`: `gr discover` is now an alias for `gr tag discover`; `gr discover` now accepts path arguments, shows progress during a scan and only scans five levels deep by default. Thanks @coderjoe for the patches!
 - `0.4.1`: `gr status` now only invokes git once per directory, thanks @coderjoe!
 - `0.4.0`: Added several usability improvements and bug fixes, courtesy of @nichtich (better handling of missing directories, support for simple paths). Added a fix that improves errors related to directory permissions, courtesy of @pnxs.
 - `0.3.0`: Switched from `#foo` to `@foo` for tags; while the `#foo` syntax looks cool, most shells will treat it as a comment unless the tag is surrounded by quotes. Looking back at the design, I'd rather go for usability over pretty looking commands. Updated the documentation to match this change.
@@ -64,9 +65,11 @@ Use the auto-discovery feature to set up tags quickly:
 
     gr tag discover
 
-By default auto-discovery searches all paths under your home directory.
+By default auto-discovery searches all paths under your home directory. `gr discover` is also an alias for `gr tag discover` (since v0.5.0).
 
-If you'd prefer, you can specify a directory under which auto-discovery should search:
+Note that discover only scans up to five levels deep by default (since v0.5.0); if you need to scan even deeper in your path tree you should just pass in an explicit set of starting points to `gr tag discover`.
+
+If you'd prefer, you can specify a directory under which auto-discovery should search (since in v0.5.0):
 
     gr tag discover /mnt/external/projects
 

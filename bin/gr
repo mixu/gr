@@ -22,14 +22,6 @@ function help(req) {
   req.exit();
 }
 
-// middleware: git
-/*
-gr.use(function(req, res, next) {
-  console.log('Ran middleware');
-  next();
-});
-*/
-
 // plugins
 
 gr.use('help', help);

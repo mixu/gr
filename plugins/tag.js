@@ -103,11 +103,10 @@ function list(req, res, next) {
 
 var spawn = require('child_process').spawn,
     os = require('os'),
-    tty = require('tty'),
-    findBySubdir = require('../lib/find-by-subdir.js');
+    tty = require('tty');
 
 function discover(req, res, next) {
-  var discoverPaths = (req.argv.length > 0 ? req.argv : [req.gr.homePath]),
+  var currentPaths = (req.argv.length > 0 ? req.argv : [req.gr.homePath]),
       repos = (req.gr.directories ? req.gr.directories : []),
       pathMaxLen = repos.reduce(function(prev, current) {
         return Math.max(prev, current.replace(req.gr.homePath, '~').length + 2);
@@ -123,9 +122,53 @@ function discover(req, res, next) {
       gitPaths = [],
       append = '';
 
-  discoverPaths.forEach(function(path) {
-    gitPaths = gitPaths.concat(findBySubdir(path, ['.git']));
-  });
+  var maxDepth = 5;
+  var depth = 0;
+  var nextPaths = [];
+  var i = 0;
+  var total = currentPaths.length;
+  var stderr = process.stderr;
+  while (currentPaths.length > 0 && depth < maxDepth) {
+    var p = currentPaths.shift();
+    i++;
+    if (stderr.isTTY) {
+      stderr.cursorTo(0);
+      var str = '[gr] ' + i + '/' + total + ' Scanning ' + p + '/* for .git directories (depth ' + (depth + 1) + ')';
+      stderr.write(str.substr(0, stderr.columns));
+      stderr.clearLine(1);
+    }
+    try {
+      var paths = fs.readdirSync(p).filter(function(name) {
+        return fs.statSync(path.join(p, name)).isDirectory();
+      });
+      var hasGit = paths.filter(function(p) { return p === '.git';});
+      gitPaths = gitPaths.concat(hasGit.map(function(name) { return path.join(p, name); }));
+      nextPaths = nextPaths.concat(
+        paths.filter(function(p) {
+          return p.charAt(0) !== '.';
+        }).map(function(name) {
+          return path.join(p, name);
+        })
+      );
+    } catch (e) {
+      // ignore ENOENT (can occur with bad symlinks)
+      // and EACCESS (can occur with superuser-permission paths)
+      if (e.code !== 'ENOENT' && e.code !== 'EACCES') {
+        throw e;
+      }
+    }
+    if (currentPaths.length === 0) {
+      depth++;
+      if (depth < maxDepth) {
+        total += nextPaths.length;
+        currentPaths = nextPaths;
+        nextPaths = [];
+      }
+    }
+  }
+  if (stderr.isTTY) {
+    stderr.write('\n');
+  }
 
   // for each git path:
   gitPaths.sort().forEach(function(dir) {

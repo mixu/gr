@@ -45,8 +45,8 @@ gr tag ..
   add <t> <path>    Add a tag to <path>
   rm <t> <path>     Remove a tag from <path>
   list              List all tags (default action)
-  discover <path>   Auto-discover git paths under <path>
-                    (<path> defaults to ~/ if omitted)
+  discover <paths>  Auto-discover git paths under the list of <paths>
+                    (If omitted, <paths> defaults to ~/)
 
 gr list        List all known repositories and their tags
 

@@ -107,9 +107,19 @@ Gr.prototype.parseTargets = function(argv) {
         isTarget = true;
         argv.shift();
         break;
-      case '~':
-      case '/':
-      case '.':
+      default:
+        if (argv[0] == '--json') {
+          argv.shift();
+          this.format = 'json';
+          isTarget = true;
+          processed++;
+          break;
+        }
+        if (argv[0] == '--') {
+          isTarget = false;
+          processed++;
+          break;
+        }
         // paths
         targetPath = path.resolve(process.cwd(), argv[0]);
         if (fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
@@ -118,18 +128,6 @@ Gr.prototype.parseTargets = function(argv) {
           isTarget = true;
           argv.shift();
         }
-        break;
-      default:
-        if (argv[0] == '--json') {
-          argv.shift();
-          this.format = 'json';
-          isTarget = true;
-          processed++;
-        } else if (argv[0] == '--') {
-          isTarget = false;
-          processed++;
-        }
-        break;
     }
   } while (isTarget && argv.length > 0);
 

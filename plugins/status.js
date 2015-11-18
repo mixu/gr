@@ -46,40 +46,37 @@ module.exports = function(req, res, next) {
 
     run(['git', '-c', 'color.status=always', 'status', '-sb'], cwd, req.done);
   } else {
-    var task = exec('git status --porcelain ', {
+    var task = exec('git status --branch --porcelain ', {
         cwd: cwd,
         maxBuffer: 1024 * 1024 // 1Mb
       }, function(err, stdout, stderr) {
         var lines = stdout.split('\n').filter(function(line) {
           return !!line.trim();
         });
-        // to find out behind/ahead:
-        // git -c color.ui=false status --short --branch
-        exec('git -c color.ui=false status --short --branch', {
-            cwd: cwd,
-            maxBuffer: 1024 * 1024 // 1Mb
-          }, function(err, stdout, stderr) {
-          // parse
-          var behind = stdout.match(/(\[.+\])/g) || '',
-              modified = (lines.length > 0 ?
-                lines.length + ' modified' :
-                'Clean'
-              );
-          console.log(
-            style(dirname, 'gray') +
-            style(path.basename(cwd), 'white') + pad(dirname + path.basename(cwd), pathMaxLen) + ' ' +
-            style(modified, (lines.length > 0 ? 'red' : 'green')) + pad(modified, 14) +
-            behind + pad(behind, 14) +
-            tags.map(function(s) { return '@' + s; }).join(' ')
-          );
-          if (err !== null) {
-            console.log('exec error: ' + err);
-            if (stderr) {
-              console.log('stderr: ' + stderr);
-            }
+
+        //remove the branch info so it isn't counted as a change
+        var branchInfo = lines.shift();
+
+        // parse
+        var behind = (branchInfo || '').match(/(\[.+\])/g) || '',
+            modified = (lines.length > 0 ?
+              lines.length + ' modified' :
+              'Clean'
+            );
+        console.log(
+          style(dirname, 'gray') +
+          style(path.basename(cwd), 'white') + pad(dirname + path.basename(cwd), pathMaxLen) + ' ' +
+          style(modified, (lines.length > 0 ? 'red' : 'green')) + pad(modified, 14) +
+          behind + pad(behind, 14) +
+          tags.map(function(s) { return '@' + s; }).join(' ')
+        );
+        if (err !== null) {
+          console.log('exec error: ' + err);
+          if (stderr) {
+            console.log('stderr: ' + stderr);
           }
-          req.done();
-        });
+        }
+        req.done();
       });
   }
 };

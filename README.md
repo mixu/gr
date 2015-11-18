@@ -17,6 +17,10 @@ To install this fork: `npm install -g git+ssh://git@github.com:michaek/gr.git`
 
 ## Changelog
 
+- Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know it can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
+- `0.5.0`: `gr discover` is now an alias for `gr tag discover`; `gr discover` now accepts path arguments, shows progress during a scan and only scans five levels deep by default. Thanks @coderjoe for the patches!
+- `0.4.1`: `gr status` now only invokes git once per directory, thanks @coderjoe!
+- `0.4.0`: Added several usability improvements and bug fixes, courtesy of @nichtich (better handling of missing directories, support for simple paths). Added a fix that improves errors related to directory permissions, courtesy of @pnxs.
 - `0.3.0`: Switched from `#foo` to `@foo` for tags; while the `#foo` syntax looks cool, most shells will treat it as a comment unless the tag is surrounded by quotes. Looking back at the design, I'd rather go for usability over pretty looking commands. Updated the documentation to match this change.
 
 ## Example
@@ -60,14 +64,22 @@ Next, to install `gr` (the name was already taken on npm):
 
     npm install -g git-run
 
-You may need to prefix this with `sudo`. 
+You may need to prefix this with `sudo`.
 
 ### Setting up tags
 Use the auto-discovery feature to set up tags quickly:
 
     gr tag discover
 
-Auto-discovery searches all paths under your home directory, generates a list, and opens it in your default console editor. 
+By default auto-discovery searches all paths under your home directory. `gr discover` is also an alias for `gr tag discover` (since v0.5.0).
+
+Note that discover only scans up to five levels deep by default (since v0.5.0); if you need to scan even deeper in your path tree you should just pass in an explicit set of starting points to `gr tag discover`.
+
+If you'd prefer, you can specify a directory under which auto-discovery should search (since in v0.5.0):
+
+    gr tag discover /mnt/external/projects
+
+Once auto-discovery completes, it will generate a list, and open it in your default console editor.
 
 It will look like this:
 
@@ -82,13 +94,13 @@ It will look like this:
     ~/foo
     ~/bar/baz
 
-Add tags after each path, save the file, and exit. 
+Add tags after each path, save the file, and exit.
 
 Your tags are now set up!
 
 Verify with `gr status` or `gr tag list`. Use `gr @work status` or `gr @work ls -lah` to see how commands are executed. (`status` is a built-in command; `ls -lah` is not, so it is run in each of the paths.)
 
-You can run auto-discovery multiple times. It makes tag-related bulk changes  quite easy.
+You can run auto-discovery multiple times. It makes tag-related bulk changes quite easy.
 
 ## Tab completion
 
@@ -109,7 +121,7 @@ COMMAND                                                         | TASK
 `gr @work git fetch` and then `gr @work status`                 | Update all my work repos. This fetches the newest information from the remote, and then prints a one-line-at-a-time summary.
 `gr @work git diff` or `gr @work git diff --cached`             | See diffs
 `gr @work jshint . --exclude=**/node_modules`                   | Run `jshint`
-`gr @write make`                                                | Rebuild all my writing via `make` 
+`gr @write make`                                                | Rebuild all my writing via `make`
 `gr @work npm ls`                                               | List install npm modules
 `gr @work git --no-pager log --decorate --graph --oneline -n 3` | Print a graph-like log
 
@@ -138,10 +150,8 @@ Targets can be *paths* or *tags*. For example:
     gr ~/foo ~/bar status
     gr @work ls -lah
 
-- **Path** targets should be directories. 
+- **Path** targets should be directories.
 - **Tags** refer to sets of directories. They managed using the `tag` built-in.
-
-If you are using a scripting language that uses `#` for comments, you can also write tags as `-t foo`.
 
 If no targets are given, then all tagged paths are used. For example, `gr status` will report the status of all repositories.
 
@@ -169,6 +179,16 @@ Long form:
 Example:
 
     gr +@work ~/bar
+
+Internally, the tags are stored in the config file `~/.grconfig.json`. For example, the tag `@books` for the path `/home/m/mnt/css-book` would be stored as:
+
+    {
+     "tags": {
+      "books": [
+        "/home/m/mnt/css-book"
+      ]
+    }
+For some use cases, it may be easier to just edit this file rather than use the commands `tag add` and `tag rm`.
 
 ## Commands
 
@@ -211,7 +231,7 @@ Tags can also be specified more explicitly. For example `gr -t work -t play` is 
 
 ## Plugins
 
-TODO: 
+TODO:
 
 - [`bootstrap`](#TODO): bootstraps a set of repositories from a config file.
 
@@ -299,7 +319,7 @@ Here are some plugin ideas:
 
 ## Make your plugin searchable
 
-If you write a plugin, make sure to add the `gr` keyword to (in [`package.json`](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching `npm` by tag](https://npmjs.org/browse/keyword/gr). 
+If you write a plugin, make sure to add the `gr` keyword to (in [`package.json`](https://npmjs.org/doc/json.html#keywords)). This makes it easy to find plugins by [searching `npm` by tag](https://npmjs.org/browse/keyword/gr).
 
 Also, file a PR against this README if you want to have your plugin listed here.
 

@@ -22,14 +22,6 @@ function help(req) {
   req.exit();
 }
 
-// middleware: git
-/*
-gr.use(function(req, res, next) {
-  console.log('Ran middleware');
-  next();
-});
-*/
-
 // plugins
 
 gr.use('help', help);
@@ -67,6 +59,8 @@ gr.use(['tag', 'list'], tag.list);
 gr.use(['tag', 'ls'], tag.list);
 gr.use(['tag', 'discover'], tag.discover);
 gr.use(['tag'], tag.list);
+// for usability: gr discover should run gr tag discover
+gr.use(['discover'], tag.discover);
 
 // default: run the remainder as a shell task
 gr.use('--', require('../plugins/run.js'));

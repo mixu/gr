@@ -44,10 +44,11 @@ gr tag ..
   rm <t>            Remove a tag from the current directory
   add <t> <path>    Add a tag to <path>
   rm <t> <path>     Remove a tag from <path>
-  list              List all tags (default action)
-  discover <paths>  Auto-discover git paths under the list of <paths>
+
+gr tag discover <paths> Auto-discover git paths under  the list of <paths>
                     (If omitted, <paths> defaults to ~/)
 
+gr tag list    List all known repositories and their tags
 gr list        List all known repositories and their tags
 
 gr status       Displays the (git) status of the selected directories.

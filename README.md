@@ -205,8 +205,11 @@ Tags can also be specified more explicitly. For example `gr -t work -t play` is 
       rm <t>          Remove a tag from the current directory
       add <t> <path>  Add a tag to <path>
       rm <t> <path>   Remove a tag from <path>
-      list            List all tags (default action)
-      discover        Auto-discover git paths under ~/
+
+    gr tag discover <paths> Auto-discover git paths under  the list of <paths>
+                           (If omitted, <paths> defaults to ~/)
+
+    gr tag list         List all known repositories and their tags
 
     gr list        List all known repositories and their tags
 

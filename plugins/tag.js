@@ -175,6 +175,7 @@ function discover(req, res, next) {
     var tags, humanDir;
     // 1) normalize by taking dirname, changing homePath to ~/ and sorting
     dir = path.dirname(dir);
+    dir = path.resolve(dir);
     humanDir = dir.replace(new RegExp('^' + req.gr.homePath + '/'), '~/')
                   .replace(/ /g, '\\ ');
     // 2) search for matching tags

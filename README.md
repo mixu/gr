@@ -12,6 +12,7 @@
 ## Changelog
 
 - Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know it can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
+- `0.5.1`: `gr discover` now handles paths outside the home directory as expected, thanks @farmerchris!
 - `0.5.0`: `gr discover` is now an alias for `gr tag discover`; `gr discover` now accepts path arguments, shows progress during a scan and only scans five levels deep by default. Thanks @coderjoe for the patches!
 - `0.4.1`: `gr status` now only invokes git once per directory, thanks @coderjoe!
 - `0.4.0`: Added several usability improvements and bug fixes, courtesy of @nichtich (better handling of missing directories, support for simple paths). Added a fix that improves errors related to directory permissions, courtesy of @pnxs.

@@ -66,7 +66,7 @@ function list(req, res, next) {
       console.log(
         style('Paths tagged ', 'gray') +
         style('@' + req.argv[0], 'white') +
-        ': ' + obj.join(', ')
+        ':\n ' + obj.join('\n ')
       );
     } else {
       console.log(JSON.stringify(obj, null, 2));
@@ -79,9 +79,9 @@ function list(req, res, next) {
           console.log(
             style('Paths tagged ', 'gray') +
             style('@' + tag, 'white') +
-            ': ' + (Array.isArray(val) ? val.map(function(s) {
+            ':\n ' + (Array.isArray(val) ? val.map(function(s) {
               return s.replace(req.gr.homePath, '~');
-            }).join(', ') : val)
+            }).join('\n ') : val)
           );
       });
     } else {

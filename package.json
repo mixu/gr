@@ -17,7 +17,7 @@
     "management"
   ],
   "author": "Mikito Takada <mikito.takada@gmail.com> (http://mixu.net/)",
-  "license": "BSD",
+  "license": "BSD-3-Clause",
   "gitHead": "0791027e594e6bf6818a9a9af07d33f1d62c5a44",
   "bugs": {
     "url": "https://github.com/mixu/gr/issues"

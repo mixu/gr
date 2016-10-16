@@ -48,8 +48,8 @@ gr tag ..
 gr tag discover <paths> Auto-discover git paths under  the list of <paths>
                     (If omitted, <paths> defaults to ~/)
 
-gr tag list    List all known repositories and their tags
-gr list        List all known repositories and their tags
+gr tag list    List all known repositories, grouped by their tags
+gr list        List all known repositories
 
 gr status       Displays the (git) status of the selected directories.
 gr status -v    Runs "git status -sb" for a more verbose status.

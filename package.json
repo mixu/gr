@@ -4,7 +4,7 @@
   "description": "A tool for managing multiple git repositories",
   "main": "index.js",
   "scripts": {
-    "test": "make tests"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -30,7 +30,8 @@
     "tabtab": "git+https://github.com/mixu/node-tabtab.git"
   },
   "devDependencies": {
-    "file-fixture": "0.0.2"
+    "file-fixture": "0.0.2",
+    "mocha": "^3.2.0"
   },
   "jshintConfig": {
     "-W018": true,

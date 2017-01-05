@@ -1,7 +1,7 @@
 TESTS += test/*.test.js
 
 test:
-	@mocha \
+	@node_modules/.bin/mocha \
 		--reporter spec \
 		--slow 2000ms \
 		--bail \

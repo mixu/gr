@@ -118,7 +118,7 @@ function discover(req, res, next) {
   }
 
   var editor = process.env['GIT_EDITOR'] || process.env['EDITOR'] || 'nano',
-      tmpfile = os.tmpDir() + '/gr-repos-tmp.txt',
+      tmpfile = os.tmpdir() + '/gr-repos-tmp.txt',
       gitPaths = [],
       append = '';
 

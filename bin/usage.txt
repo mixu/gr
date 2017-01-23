@@ -62,5 +62,6 @@ gr config ..
   list          List all configuration (default action)
 
 gr export <path-to-export> Export your grconfig in a consumable way for other people.
+gr import <file> Import from a previously exported grconfig.
 gr help        Show this help
 gr version     Version info

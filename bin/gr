@@ -10,7 +10,8 @@ require('minilog').enable();
 
 var config = require('../plugins/config.js'),
     tag = require('../plugins/tag.js'),
-    status = require('../plugins/status.js');
+    status = require('../plugins/status.js'),
+    exportPlugin = require('../plugins/export.js');
 
 function version(req) {
   console.log(require('../package.json').version);
@@ -61,6 +62,9 @@ gr.use(['tag', 'discover'], tag.discover);
 gr.use(['tag'], tag.list);
 // for usability: gr discover should run gr tag discover
 gr.use(['discover'], tag.discover);
+
+// export plugin
+gr.use('export', exportPlugin.exportAsJson);
 
 // default: run the remainder as a shell task
 gr.use('--', require('../plugins/run.js'));

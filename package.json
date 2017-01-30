@@ -26,7 +26,10 @@
     "gr": "./bin/gr"
   },
   "dependencies": {
+    "async": "^2.1.4",
+    "lodash.groupby": "^4.6.0",
     "minilog": "~2.0.2",
+    "simple-git": "^1.65.0",
     "tabtab": "git+https://github.com/mixu/node-tabtab.git"
   },
   "devDependencies": {

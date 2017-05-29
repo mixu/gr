@@ -64,7 +64,7 @@ module.exports = function(req, res, next) {
               'Clean'
             );
 
-        var branchName = branchInfo.slice(3).split('.', 1)[0];
+        var branchName = branchInfo.slice(3).split('...', 1)[0];
 
         console.log(
           style(dirname, 'gray') +

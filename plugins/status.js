@@ -38,7 +38,7 @@ module.exports = function(req, res, next) {
   // search for matching tags
   tags = req.gr.getTagsByPath(cwd);
 
-  if (req.argv.length > 0 && req.argv[0] == '-v') {
+  if (req.argv.length > 0 && req.argv.includes('-v')) {
     console.log(
       style('\nin ' + dirname, 'gray') +
       style(path.basename(cwd), 'white') + '\n'
@@ -64,16 +64,19 @@ module.exports = function(req, res, next) {
               'Clean'
             );
 
-        var branchName = branchInfo.slice(3).split('...', 1)[0];
+        var branchName = branchInfo.slice(3).split('...', 1)[0],
+            pname = path.basename(cwd),
+            printed;
 
-        console.log(
-          style(dirname, 'gray') +
-          style(path.basename(cwd), 'white') + pad(dirname + path.basename(cwd), pathMaxLen) + ' ' +
+        printed = style(dirname, 'gray') +
+          style(pname, 'white') + pad(dirname + pname, pathMaxLen) + ' ' +
           branchName + pad(branchName, 15) + ' ' +
           style(modified, (lines.length > 0 ? 'red' : 'green')) + pad(modified, 14) +
-          behind + pad(behind, 14) +
-          tags.map(function(s) { return '@' + s; }).join(' ')
-        );
+          behind + pad(behind, 14);
+        if (req.argv.length === 0 || !req.argv.includes('-q')) {
+          printed += tags.map(function(s) { return '@' + s; }).join(' ');
+        }
+        console.log(printed);
         if (err !== null) {
           console.log('exec error: ' + err);
           if (stderr) {

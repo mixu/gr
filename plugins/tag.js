@@ -101,7 +101,7 @@ function list(req, res, next) {
   req.exit();
 }
 
-var spawn = require('child_process').spawn,
+var execSync = require('child_process').execSync,
     os = require('os'),
     tty = require('tty');
 
@@ -193,37 +193,17 @@ function discover(req, res, next) {
   fs.writeFileSync(tmpfile,
     fs.readFileSync(__dirname + '/discover.template.md').toString() + append);
 
-  var task = spawn(editor, [tmpfile], {
+  execSync(editor + " " + tmpfile, {
     env: process.env,
     stdio: 'inherit'
   });
 
-  function indata(c) {
-    task.stdin.write(c);
+  // now read back the file
+  var lines = fs.readFileSync(tmpfile).toString().split('\n');
+  applyTags(req, lines);
+  if (req.format == 'human') {
+    console.log('Tags updated. Run `gr status` or `gr tag list` to see the current state.');
   }
-  function outdata(c) {
-    process.stdout.write(c);
-  }
-
-  task.on('exit', function(code) {
-    // cleanup
-    if (code !== 0) {
-      console.log('');
-      console.log('spawn-task: "' + line + '" exited with nonzero exit code: ' + code);
-      // task.emit('error', new Error('Child process exited with nonzero exit code: '+ code));
-    }
-  });
-
-  task.once('close', function() {
-    // now read back the file
-    var lines = fs.readFileSync(tmpfile).toString().split('\n');
-    applyTags(req, lines);
-    if (req.format == 'human') {
-      console.log('Tags updated. Run `gr status` or `gr tag list` to see the current state.');
-    }
-    req.exit();
-    return;
-  });
 }
 
 // ignores escaped spaces e.g. '\ '

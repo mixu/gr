@@ -12,6 +12,9 @@
 ## Changelog
 
 - Looking for more committers! Let me know if you're interested; gr currently meets my fairly limited needs but I know it can become even more useful given a larger core team and/or a stronger vision around how it can support usage in a team working on multiple repos.
+- `0.5.5`: Submodule directory detection fixes, thanks @bimlas! Better behavior when the EDITOR environment variable is not set, thanks @petercoulton!
+- `0.5.4`: Added `gr export` and `gr import` for sharing `.grconfig`, thanks @timja-kainos! Added current branch to status, thanks @n1ywb!
+- `0.5.3`: minor improvements to internals, thanks @timja-kainos!
 - `0.5.2`: `gr` now handles git submodules better, thanks @cojomojo! `gr` also prints out tags with newlines which makes for a more readable output, thanks @nwinkler!
 - `0.5.1`: `gr discover` now handles paths outside the home directory as expected, thanks @farmerchris!
 - `0.5.0`: `gr discover` is now an alias for `gr tag discover`; `gr discover` now accepts path arguments, shows progress during a scan and only scans five levels deep by default. Thanks @coderjoe for the patches!

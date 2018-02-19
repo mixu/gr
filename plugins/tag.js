@@ -153,7 +153,8 @@ function discover(req, res, next) {
     } catch (e) {
       // ignore ENOENT (can occur with bad symlinks)
       // and EACCESS (can occur with superuser-permission paths)
-      if (e.code !== 'ENOENT' && e.code !== 'EACCES') {
+      // and ELOOP (can occur when encounters circular symlink)
+      if (e.code !== 'ENOENT' && e.code !== 'EACCES' && e.code != 'ELOOP') {
         throw e;
       }
     }

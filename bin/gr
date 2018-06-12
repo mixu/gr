@@ -70,6 +70,9 @@ gr.use('export', exportPlugin.exportAsJson);
 // import plugin
 gr.use('import', importPlugin.importFromJson);
 
+// interactive run
+gr.use('interact', require('../plugins/interact.js'));
+
 // default: run the remainder as a shell task
 gr.use('--', require('../plugins/run.js'));
 gr.use(require('../plugins/run.js'));
